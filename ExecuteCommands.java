@@ -1,6 +1,7 @@
 
 import java.rmi.Remote;
 
+
 public interface ExecuteCommands extends java.rmi.Remote {
     public boolean addPessoa(String username, String password) throws java.rmi.RemoteException;
     public boolean addTopic(String topicName) throws java.rmi.RemoteException;
