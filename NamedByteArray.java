@@ -19,7 +19,7 @@ public class NamedByteArray implements Serializable {
             bis.close();
             fis.close();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
 
     }
@@ -34,8 +34,7 @@ public class NamedByteArray implements Serializable {
 
     public void saveToFile(String newNome) {
         try{
-            String nome = newNome;
-            File copy = new File(nome);
+            File copy = new File(newNome);
             FileOutputStream fos = new FileOutputStream(copy);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             bos.write(this.getBytes(), 0, this.getBytes().length);

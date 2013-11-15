@@ -348,11 +348,11 @@ public class Programa_Cliente extends javax.swing.JFrame {
             }
         }
 
-        private void jButton_regActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_loginActionPerformed
+        private void jButton_regActionPerformed() {//GEN-FIRST:event_jButton_loginActionPerformed
             if(jLabel_ligar.isVisible())
                 jLabel_ligar.setVisible(false);
 
-            if(login == true){
+            if (login) {
                 if(jLabel_ip1.isVisible()){
                     jLabel_ip1.setVisible(false);
                     jLabel_ip2.setVisible(false);
@@ -367,8 +367,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 jButton_login.setText("Registar");
                 jTextField_user.setText("");
                 jPasswordField_pass.setText("");
-            }
-            else{
+            } else {
                 login = true;
                 jButton_ip.setEnabled(true);
                 jButton_login.setText("Ligar");
@@ -554,7 +553,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
             jButton_reg.setText("Registar");
             jButton_reg.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    jButton_regActionPerformed(evt);
+                    jButton_regActionPerformed();
                 }
             });
 
