@@ -1,3 +1,5 @@
+package projectometa2teste;
+
 import java.io.*;
 import java.net.*;
 import java.rmi.Naming;
@@ -177,7 +179,7 @@ public class Servidor_TCP {
                             objectOutput.writeObject(msg);
                         }else if(tipo == 6) {
                             System.out.println("Pedido para a criação de ideia");
-                            if(srmi.addNewIdeia(data.popList(), data.popList(), data.popList(), data.popList(), tryParse(data.popList()), tryParse(data.popList()), tryParse(data.popList()), data.getData(), data.getFile()) == true)
+                            if(srmi.addNewIdeia(/*data.popList(),*/ data.popList(), /*data.popList(),*/ data.popList(), tryParse(data.popList()), tryParse(data.popList()), tryParse(data.popList()), data.getData(), data.getFile()) == true)
                                 msg = new Mensagem(6,data.getIdUser());
                             else
                                 msg = new Mensagem(-6,data.getIdUser());

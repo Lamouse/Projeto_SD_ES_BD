@@ -1,10 +1,12 @@
+package projectometa2teste;
+
 
 public interface ExecuteCommands extends java.rmi.Remote {
     public boolean addPessoa(String username, String password) throws java.rmi.RemoteException;
     public boolean addTopic(String topicName) throws java.rmi.RemoteException;
     public int hasUSer(String username, String password) throws java.rmi.RemoteException;
     public Mensagem retrieveTopicos() throws java.rmi.RemoteException;
-    public boolean addNewIdeia(String type, String ideiaText, String upId, String topicos, int person, int startShares, int value, String dataString, NamedByteArray file) throws java.rmi.RemoteException;
+    public boolean addNewIdeia(/*String type,*/ String ideiaText, /*String upId,*/ String topicos, int person, int startShares, int value, String dataString, NamedByteArray file) throws java.rmi.RemoteException;
     public Mensagem retrieveIdeias(int topicoID) throws java.rmi.RemoteException;
     public Mensagem retrieveAttributes(int userID, int ideiaID) throws java.rmi.RemoteException;
     public boolean pendingTransaction(int idVende, int idCompra, int idIdeia, int sharesToBuy, int newPrice, int precoCompra, String dataString) throws java.rmi.RemoteException;

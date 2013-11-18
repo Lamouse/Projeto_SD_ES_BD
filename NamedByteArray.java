@@ -1,3 +1,5 @@
+package projectometa2teste;
+
 import java.io.*;
 
 /**
@@ -8,7 +10,7 @@ public class NamedByteArray implements Serializable {
     private String name;
     private byte [] bytes;
 
-    public NamedByteArray(String name) throws FileNotFoundException{
+    public NamedByteArray(String name) {
         this.name = name;
         try {
             File myFile = new File(name);

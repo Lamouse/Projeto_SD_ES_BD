@@ -1,3 +1,5 @@
+package projectometa2teste;
+
 import javax.swing.*;
 import java.io.EOFException;
 import java.io.IOException;
@@ -1405,9 +1407,9 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 if(!"none".equals(file))
     			    msg_aux.addFile(file);
 
-                msg_aux.addList(opiniao);
+//                msg_aux.addList(opiniao);
                 msg_aux.addList(msg);
-                msg_aux.addList(ideia);
+//                msg_aux.addList(ideia);
                 msg_aux.addList(topico);
                 msg_aux.addList(Integer.toString(user_id));
                 msg_aux.addList(Integer.toString(nr_share));
@@ -2170,7 +2172,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 else if(tipo == 5){
                     int i, length = msg.getListSize()/3;
                     for(i=0;i<length;i++) {
-                        list_aux.add(add_idea_visual(tryParse(msg.popList()),msg.popList(),msg.popList()));
+                        list_aux.add(add_idea_visual(tryParse(msg.popList()),msg.popList(),""));
                     }
                     atualiza_jpanel(jPanel_topic_idea, list_aux);
                 }
@@ -2234,7 +2236,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 else if(tipo == 11){
                     int i, length = msg.getListSize()/7;
                     for(i=0;i<length;i++) {
-                        list_aux.add(add_our_idea(tryParse(msg.popList()),msg.popList(),msg.popList(),msg.popList(),msg.popList(),msg.popList(),msg.popList()));
+                        list_aux.add(add_our_idea(tryParse(msg.popList()),msg.popList(),"",msg.popList(),msg.popList(),msg.popList(),msg.popList()));
                     }
                     atualiza_jpanel(jPanel_idea, list_aux);
                 }
@@ -2246,7 +2248,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
                         jLabel_search_name.setText(msg.popList());
                         int i, length = msg.getListSize()/3;
                         for(i=0;i<length;i++) {
-                            list_aux.add(add_idea_visual(tryParse(msg.popList()),msg.popList(),msg.popList()));
+                            list_aux.add(add_idea_visual(tryParse(msg.popList()),msg.popList(),""));
                         }
                         atualiza_jpanel(jPanel_search, list_aux);
                     }

@@ -1,3 +1,5 @@
+package projectometa2teste;
+
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -73,12 +75,7 @@ public class Mensagem implements Serializable {
 	}
 
     public void addFile(String path) {
-        try {
-            file = new NamedByteArray(path);
-        } catch (FileNotFoundException e) {
-            file = null;
-            System.err.println("Ficheiro Não encontrado: " + e);
-        }
+        file = new NamedByteArray(path);
     }
 
     public NamedByteArray getFile() {
