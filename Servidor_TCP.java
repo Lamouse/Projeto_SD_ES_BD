@@ -1,5 +1,3 @@
-package projectometa2teste;
-
 import java.io.*;
 import java.net.*;
 import java.rmi.Naming;
@@ -179,26 +177,17 @@ public class Servidor_TCP {
                             objectOutput.writeObject(msg);
                         }else if(tipo == 6) {
                             System.out.println("Pedido para a criação de ideia");
-                            if(srmi.addNewIdeia(/*data.popList(),*/ data.popList(), /*data.popList(),*/ data.popList(), tryParse(data.popList()), tryParse(data.popList()), tryParse(data.popList()), data.getData(), data.getFile()) == true)
+                            if(srmi.addNewIdeia(/*data.popList(), data.popList(), */data.popList(), data.popList(), tryParse(data.popList()), tryParse(data.popList()), tryParse(data.popList()), data.getData(), data.getFile()) == true)
                                 msg = new Mensagem(6,data.getIdUser());
                             else
                                 msg = new Mensagem(-6,data.getIdUser());
                             objectOutput.writeObject(msg);
                         }else if(tipo == 7) {
                             System.out.println("Compra de Shares");
-
                             int id_ideia = tryParse(data.getElemList(2)), id_vende = tryParse(data.getElemList(0)), id_compra = tryParse(data.getElemList(1));
                             if(srmi.pendingTransaction(tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()), data.getData()) == true){
                                 srmi.verifyExecutePendingTransaction(id_ideia);
-
                                 msg = new Mensagem(7,id_ideia);
-                                if(idUser.indexOf(id_vende) != -1){
-                                    Mensagem msg_aux = new Mensagem(14,0);
-                                    msg_aux.addList("O utilizador " + id_compra + " acabou de comprar shares suas.");
-                                    socketUser.get(idUser.indexOf(id_vende)).writeObject(msg_aux);
-                                }
-                                else
-                                    srmi.insereUserDataOffline(id_vende,id_compra);
                             }else
                                 msg = new Mensagem(-7,data.getIdUser());
                             objectOutput.writeObject(msg);
@@ -231,6 +220,11 @@ public class Servidor_TCP {
                             System.out.println("Pedido para a pesquisa de ideias por tópico");
                             msg = srmi.retrieveIdeiasTopico(tryParse(data.popList()));
                             objectOutput.writeObject(msg);
+                        }else if(tipo == 14) {
+                            System.out.println("Pedido para a pesquisa de notificações");
+                            msg = new Mensagem(14,0);
+                            msg.addList(srmi.popUserDataOffline(data.getIdUser()));
+                            objectOutput.writeObject(msg);
                         }else if(tipo == 15) {
                             System.out.println("Pedido para o download de Anexos");
                             msg = srmi.retrieveAnexos(tryParse(data.popList()),data.popList());
@@ -247,8 +241,8 @@ public class Servidor_TCP {
                             Mensagem msg_aux = new Mensagem(17,0);
                             int idideia = tryParse(data.getElemList(0));
                             if(srmi.addPendingTransaction(data.getIdUser(),tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),data.getData())==true){
-                                if(srmi.verifyExecutePendingTransaction(idideia)==true)
-                                    msg_aux.addList("Foram compradas shares através do pedido");
+                                System.out.println("COMPRA ACEITE");
+                                srmi.verifyExecutePendingTransaction(idideia);
                             }
                             objectOutput.writeObject(msg_aux);
                         }

@@ -1,5 +1,3 @@
-package projectometa2teste;
-
 import javax.swing.*;
 import java.io.EOFException;
 import java.io.IOException;
@@ -127,6 +125,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
     private ObjectInputStream ois;
     private ReceiveMsg thread_r;
     private SendMsg thread_s;
+    private SendNtf thread_n;
     private int user_id;
     private String user_nome;
     private boolean login;
@@ -251,6 +250,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
 
                     if(thread_s==null && s != null){
                         thread_s = new SendMsg();
+                        thread_n = new SendNtf();
                         thread_r = new ReceiveMsg();
                     }
                 }
@@ -283,6 +283,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
 
                     if(thread_s==null && s != null){
                         thread_s = new SendMsg();
+                        thread_n = new SendNtf();
                         thread_r = new ReceiveMsg();
                     }
                 }
@@ -1407,9 +1408,9 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 if(!"none".equals(file))
     			    msg_aux.addFile(file);
 
-//                msg_aux.addList(opiniao);
+                //msg_aux.addList(opiniao);
                 msg_aux.addList(msg);
-//                msg_aux.addList(ideia);
+                //msg_aux.addList(ideia);
                 msg_aux.addList(topico);
                 msg_aux.addList(Integer.toString(user_id));
                 msg_aux.addList(Integer.toString(nr_share));
@@ -1439,6 +1440,23 @@ public class Programa_Cliente extends javax.swing.JFrame {
             else if(aux == 6) {
                 thread_s.addList(new Mensagem(10,user_id));
                 jLabel_msg_fundo.setText("");
+            }
+        }
+    }
+
+    public class SendNtf extends  Thread{
+        SendNtf() {
+            this.start();
+        }
+
+        public void run() {
+            while(true){
+                try {
+                    Thread.sleep(60000);
+                    thread_s.addList(new Mensagem(14,user_id));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
             }
         }
     }
@@ -1525,21 +1543,10 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 try{
                     aux2 = null;
                     aux2 = (Mensagem) ois.readObject();
-                    if(aux2.getTipo() != 14)
-                        cond = 10;
+                    cond = 10;
                     Output(aux2);
-                    if(listaEspera.size() > 0 && aux2.getTipo() == 14){
-                        cond--;
-                        if(cond <= 0){
-                            thread_s.addList(listaEspera.get(0));
-                            listaEspera.remove(0);
-                            System.out.println("Apagou");
-                            cond = 1;
-                        }
-                    }
-
                 }catch(SocketTimeoutException e){
-                    if(listaEspera.size() > 0 && (aux2 == null || aux2.getTipo() == 14)){
+                    if(listaEspera.size() > 0 && aux2 == null){
                         cond--;
                         if(cond <= 0){
                             thread_s.addList(listaEspera.get(0));
@@ -1550,7 +1557,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
                     }
                     aux2 = null;
                 } catch (ClassNotFoundException e) {
-                    if(listaEspera.size() > 0 && (aux2 == null || aux2.getTipo() == 14)){
+                    if(listaEspera.size() > 0 && aux2 == null){
                         cond--;
                         if(cond <= 0){
                             thread_s.addList(listaEspera.get(0));
@@ -1565,7 +1572,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
                         System.out.println("O socket fechou " + e);
                         bool = false;
                     }
-                    if(listaEspera.size() > 0 && (aux2 == null || aux2.getTipo() == 14)){
+                    if(listaEspera.size() > 0 && aux2 == null){
                         cond--;
                         if(cond <= 0){
                             thread_s.addList(listaEspera.get(0));
@@ -2125,7 +2132,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
 
                         String str_aux = msg.popList();
                         if(!"".equals(str_aux)) {
-                            jLabel_msg_fundo.setText("O utilizador" + str_aux.replace("||",", ").replace("|"," ") + "acabou de comprar shares suas.");
+                            jLabel_msg_fundo.setText("O utilizador " + str_aux.replace("||",", ").replace("|"," ") + " acabou de comprar shares suas.");
                         }
                     }
                     else{
@@ -2170,9 +2177,9 @@ public class Programa_Cliente extends javax.swing.JFrame {
                     atualiza_jpanel(jPanel_topic, list_aux);
                 }
                 else if(tipo == 5){
-                    int i, length = msg.getListSize()/3;
+                    int i, length = msg.getListSize()/2;
                     for(i=0;i<length;i++) {
-                        list_aux.add(add_idea_visual(tryParse(msg.popList()),msg.popList(),""));
+                        list_aux.add(add_idea_visual(tryParse(msg.popList()),msg.popList(),/*msg.popList()*/""));
                     }
                     atualiza_jpanel(jPanel_topic_idea, list_aux);
                 }
@@ -2234,9 +2241,9 @@ public class Programa_Cliente extends javax.swing.JFrame {
                     jTextArea_see_user.setText(hist);
                 }
                 else if(tipo == 11){
-                    int i, length = msg.getListSize()/7;
+                    int i, length = msg.getListSize()/6;
                     for(i=0;i<length;i++) {
-                        list_aux.add(add_our_idea(tryParse(msg.popList()),msg.popList(),"",msg.popList(),msg.popList(),msg.popList(),msg.popList()));
+                        list_aux.add(add_our_idea(tryParse(msg.popList()),msg.popList(),/*msg.popList()*/"",msg.popList(),msg.popList(),msg.popList(),msg.popList()));
                     }
                     atualiza_jpanel(jPanel_idea, list_aux);
                 }
@@ -2246,9 +2253,9 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 else if(tipo == 13){
                     if(msg.getListSize() > 0){
                         jLabel_search_name.setText(msg.popList());
-                        int i, length = msg.getListSize()/3;
+                        int i, length = msg.getListSize()/2;
                         for(i=0;i<length;i++) {
-                            list_aux.add(add_idea_visual(tryParse(msg.popList()),msg.popList(),""));
+                            list_aux.add(add_idea_visual(tryParse(msg.popList()),msg.popList(),/*msg.popList()*/""));
                         }
                         atualiza_jpanel(jPanel_search, list_aux);
                     }
@@ -2257,7 +2264,9 @@ public class Programa_Cliente extends javax.swing.JFrame {
                     }
                 }
                 else if(tipo == 14){
-                    jLabel_msg_fundo.setText(msg.popList());
+                    String str_aux = msg.popList();
+                    if(!"".equals(str_aux))
+                            jLabel_msg_fundo.setText("O utilizador " + str_aux.replace("||",", ").replace("|"," ") + " acabou de comprar shares suas.");
                 }
                 else if(tipo == 15){
                     if(msg.getFile() != null){
@@ -2277,7 +2286,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
                         jLabel_msg_fundo.setText(msg.popList());
                 }
 
-                if(tipo != 14 && listaEspera.size() > 0){
+                if(listaEspera.size() > 0){
                     while(listaEspera.size() > 0 && listaEspera.get(0).getTipo() != tipo){
                         thread_s.addList(listaEspera.get(0));
                         listaEspera.remove(0);

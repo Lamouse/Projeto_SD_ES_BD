@@ -1,5 +1,3 @@
-package projectometa2teste;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -177,11 +175,19 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     public Mensagem retrieveIdeiasUser(int userID) throws RemoteException {
+        /*String ideias = "select ideia.idideia, ideia.mensagem, ideia.opiniao, ideia.total_share, USER_SHARE.price, "
+                + "USER_SHARE.nr_share  from ideia, USER_SHARE "
+                + "where USER_SHARE.idideia = ideia.idideia AND USER_SHARE.IDUSER = " + userID;*/
         String ideias = "select i.idideia, i.mensagem, i.total_share, us.price, "
-                + "us.nr_share  from ideia i, USER_SHARE us"
+                + "us.nr_share  from ideia i, USER_SHARE us "
                 + "where us.idideia = i.idideia AND us.IDUSER = " + userID;
+
         Mensagem mIdeias = new Mensagem(11, 0);
+        //String ideiaID, mensagem, opiniao, total_share, price, nr_share, topicosCumulativos;
         String ideiaID, mensagem/*, opiniao*/, total_share, price, nr_share, topicosCumulativos;
+
+        System.out.println("TESTE: "+ideias);
+
         try {
             Statement statement = DBConn.createStatement();
             Statement statement2 = DBConn.createStatement();
@@ -193,16 +199,25 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 total_share = String.valueOf(rsIdeia.getInt(3));
                 price = String.valueOf(rsIdeia.getInt(4));
                 nr_share = String.valueOf(rsIdeia.getInt(5));
-                
+                /*opiniao = rsIdeia.getString(3);
+                total_share = String.valueOf(rsIdeia.getInt(4));
+                price = String.valueOf(rsIdeia.getInt(5));
+                nr_share = String.valueOf(rsIdeia.getInt(6));*/
+
                 String topicos = "select idtopico from topico_ideia where idideia = " + ideiaID;
+
+                System.out.println("TESTE2: "+topicos);
+
                 ResultSet rsTopico = statement2.executeQuery(topicos);
                 while(rsTopico.next()) {
                     String idTopico = String.valueOf(rsTopico.getInt(1));
                     topicosCumulativos += idTopico + "\n";
                 }
+
                 mIdeias.addList(ideiaID);
+                //addRespostaMensagem(mIdeias, ideiaID, mensagem);
                 mIdeias.addList(mensagem);
-//                addRespostaMensagem(mIdeias, ideiaID, mensagem);
+                //mIdeias.addList(opiniao);
                 mIdeias.addList(total_share);
                 mIdeias.addList(price);
                 mIdeias.addList(nr_share);
@@ -219,25 +234,24 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     public Mensagem retrieveIdeias(int topicoID) throws RemoteException {
+        //String ideias = "SELECT IDEIA.IDIDEIA, IDEIA.MENSAGEM, IDEIA.OPINIAO FROM TOPICO_IDEIA, IDEIA " +
         String ideias = "SELECT IDEIA.IDIDEIA, IDEIA.MENSAGEM FROM TOPICO_IDEIA, IDEIA " +
                 "WHERE TOPICO_IDEIA.IDIDEIA = IDEIA.IDIDEIA AND TOPICO_IDEIA.IDTOPICO = " + topicoID;
         Mensagem mIdeias = new Mensagem(5,0);
         try {
             Statement statement = DBConn.createStatement();
             ResultSet rs = statement.executeQuery(ideias);
-//            while(rs.next()) {
-            if(rs.next()) {
+            while(rs.next()) {
                 String ideiaID = String.valueOf(rs.getInt(1));
                 String ideiaMensagem = rs.getString(2);
-    //                String ideiaOpiniao = rs.getString(3);
+                //String ideiaOpiniao = rs.getString(3);
                 mIdeias.addList(ideiaID);
+                //addRespostaMensagem(mIdeias, ideiaID, ideiaMensagem);
                 mIdeias.addList(ideiaMensagem);
-    //                addRespostaMensagem(mIdeias, ideiaID, ideiaMensagem);
-    //                mIdeias.addList(ideiaOpiniao);
-    //            }
-                rs.close();
-                statement.close();
+                //mIdeias.addList(ideiaOpiniao);
             }
+            rs.close();
+            statement.close();
         }catch (SQLException e) {
             System.err.println("Connection Failed Retrieving Ideas. Check output console " + e);
         }
@@ -256,13 +270,17 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             rs.close();
             statement.close();
         }catch (SQLException e) {
-            System.err.println("Connection Failed Retrieving Topicos. Check output console " + e);}
+            System.err.println("Connection Failed Retrieving Ideas. Check output console " + e);}
         return aux;
     }
 
     public Mensagem retrieveIdeiasTopico(int topicoID) {
+        /*String ideias = "SELECT IDEIA.IDIDEIA, IDEIA.MENSAGEM, IDEIA.OPINIAO FROM TOPICO_IDEIA, IDEIA " +
+                "WHERE TOPICO_IDEIA.IDIDEIA = IDEIA.IDIDEIA AND TOPICO_IDEIA.IDTOPICO = " + topicoID;*/
         String ideias = "SELECT I.IDIDEIA, I.MENSAGEM FROM TOPICO_IDEIA TI, IDEIA I " +
                 "WHERE TI.IDIDEIA = I.IDIDEIA AND TI.IDTOPICO = " + topicoID;
+
+
         Mensagem mIdeias = new Mensagem(13, 0);
         String nome = existeTopicID(topicoID);
         mIdeias.addList(nome);
@@ -273,11 +291,11 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 while(rs.next()) {
                     String ideiaID = String.valueOf(rs.getInt(1));
                     String ideiaMensagem = rs.getString(2);
-//                    String ideiaOpiniao = rs.getString(3);
+                    //String ideiaOpiniao = rs.getString(3);
                     mIdeias.addList(ideiaID);
+                    //addRespostaMensagem(mIdeias, ideiaID, ideiaMensagem);
                     mIdeias.addList(ideiaMensagem);
-//                    addRespostaMensagem(mIdeias, ideiaID, ideiaMensagem);
-//                    mIdeias.addList(ideiaOpiniao);
+                    //mIdeias.addList(ideiaOpiniao);
                 }
                 rs.close();
                 statement.close();
@@ -288,9 +306,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         return mIdeias;
     }
 
-    /*public void addRespostaMensagem(Mensagem m, String ideiaID, String mensagem) {
+    public void addRespostaMensagem(Mensagem m, String ideiaID, String mensagem) {
         int IDideia = Integer.parseInt(ideiaID);
-        String ideiasUp = "SELECT IDEIA_IDEIA.IDIDEIA, MENSAGEM  FROM IDEIA_IDEIA, IDEIA " +
+        String ideiasUp = "SELECT IDEIA_IDEIA.IDIDEIA, MENSAGEM, OPINIAO  FROM IDEIA_IDEIA, IDEIA " +
                 "WHERE IDIDEIADOWN = " + ideiaID + " AND IDEIA_IDEIA.IDIDEIA IS NOT NULL AND IDEIA_IDEIA.IDIDEIA = IDEIA.IDIDEIA";
         String texto = "Em resposta a: ";
         try{
@@ -303,7 +321,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             m.addList(texto);
         }catch (SQLException e) {
             System.err.println("Connection Failed adding Ideias to Resposta. Check output console " + e);}
-    }*/
+    }
 
     public synchronized int incrementAttributeID() {
         String updateAttributeID = "UPDATE CHAVES SET CUSER_SHARE = CUSER_SHARE + 1";
@@ -646,8 +664,8 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             }
         }
         return cond;
-    }
-*/
+    }*/
+
     // Muda o preço dum User_Share de uma Ideia
     public void changeSharePrice(int pessoaID, int ideiaID, int newPrice) {
         if(newPrice < 0) {
@@ -689,9 +707,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     // Adiciona uma ideia
-    public boolean addNewIdeia(/*String type,*/ String ideiaText, /*String upId,*/ String topicos, 
-                int person, int startShares, int value, String dataString, NamedByteArray file) 
-                                                                        throws RemoteException {
+    //public boolean addNewIdeia(String type, String ideiaText, String upId, String topicos, int person, int startShares, int value, String dataString, NamedByteArray file) throws RemoteException {
+    public boolean addNewIdeia(/*String type,*/ String ideiaText, /*String upId,*/ String topicos, int person, int startShares, int value, String dataString, NamedByteArray file) throws RemoteException {
+
         int attributeID =  incrementAttributeID();
         int ideiaID =  incrementIdeiaID();
         if(verifyIdeiaMensagem(ideiaText)) {
@@ -702,10 +720,10 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             System.err.println("Um dos tópicos não existe!");
             return false;
         }
-//        if(!upId.isEmpty() && !verifyIdeiaUp(upId)) {
-//            System.err.println("Uma das ideias não existe!");
-//            return false;
-//        }
+        /*if(!upId.isEmpty() && !verifyIdeiaUp(upId)) {
+            System.err.println("Uma das ideias não existe!");
+            return false;
+        }*/
 
         String newName = "";
         String[] partes;
@@ -719,12 +737,16 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         partes = topicos.split(",");
         String insertIdeia = "INSERT INTO IDEIA VALUES"
                 + "(" + ideiaID + ",'" + ideiaText + "'," +
-                /*type + "'," +*/ startShares + "," + 1 +",'" + newName +"')";
+                startShares + "," + 1 +",'" + newName +"')";
+
+                /*+ "(" + ideiaID + ",'" + ideiaText + "','" +
+                type + "'," + startShares + ",'" + newName + "')";*/
         String insertUser_Share = "INSERT INTO USER_SHARE VALUES"
                 + "(" + attributeID + "," + ideiaID + "," + person +
                 "," + value + "," + startShares + ")";
 
-        try {
+        //String insertIdeia_Ideia = "";
+        try{
             Statement statement = DBConn.createStatement();
             try {
                 statement.executeUpdate(insertIdeia);
@@ -757,33 +779,33 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 return false;
             }
 
-//            if(upId.isEmpty()) {
-//                insertIdeia_Ideia = "INSERT INTO IDEIA_IDEIA VALUES(NULL" +
-//                        "," +  ideiaID + ")";
-//                try {
-//                    statement.addBatch(insertIdeia_Ideia);
-//                }catch (SQLException e) {
-//                    System.err.println("Connection Failed Add Batch idea! Check output console " + e);
-//                    RollBack();
-//                    statement.close();
-//                    return false;
-//                }
-//            }
-//            else {
-//                partes = upId.split(",");
-//                for(int i = 0; i < partes.length; ++i) {
-//                    insertIdeia_Ideia = "INSERT INTO IDEIA_IDEIA VALUES(" + Integer.parseInt(partes[i]) +
-//                            "," +  ideiaID + ")";
-//                    try {
-//                        statement.addBatch(insertIdeia_Ideia);
-//                    }catch (SQLException e) {
-//                        System.err.println("Connection Failed Add Batch idea! Check output console " + e);
-//                        RollBack();
-//                        statement.close();
-//                        return false;
-//                    }
-//                }
-//            }
+            /*if(upId.isEmpty()) {
+                insertIdeia_Ideia = "INSERT INTO IDEIA_IDEIA VALUES(NULL" +
+                        "," +  ideiaID + ")";
+                try {
+                    statement.addBatch(insertIdeia_Ideia);
+                }catch (SQLException e) {
+                    System.err.println("Connection Failed Add Batch idea! Check output console " + e);
+                    RollBack();
+                    statement.close();
+                    return false;
+                }
+            }
+            else {
+                partes = upId.split(",");
+                for(int i = 0; i < partes.length; ++i) {
+                    insertIdeia_Ideia = "INSERT INTO IDEIA_IDEIA VALUES(" + Integer.parseInt(partes[i]) +
+                            "," +  ideiaID + ")";
+                    try {
+                        statement.addBatch(insertIdeia_Ideia);
+                    }catch (SQLException e) {
+                        System.err.println("Connection Failed Add Batch idea! Check output console " + e);
+                        RollBack();
+                        statement.close();
+                        return false;
+                    }
+                }
+            }*/
             try {
                 statement.executeBatch();
             }catch (SQLException e) {
@@ -878,7 +900,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             if(nr_shares > 0){
                 String addPendingTransaction = "INSERT INTO PENDING_TRANSACTION VALUES (" +
                         userID + ", " + ideiaID + ", " + newPrice + ", " + maxPrice + ", " + nr_shares + ")";
+
                 //System.out.println(addPendingTransaction);
+
                 try{
                     Statement statement = DBConn.createStatement();
                     statement.executeUpdate(addPendingTransaction);
@@ -899,7 +923,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                     " WHERE IDUSER = "  + userID + " AND IDIDEIA = " + ideiaID;
             if(nr_shares == 0)   updatePendingTransaction = "DELETE FROM PENDING_TRANSACTION " +
                     "WHERE IDUSER = " + userID + "AND IDIDEIA = " + ideiaID;
+
             //System.out.println(updatePendingTransaction);
+
             try{
                 Statement statement = DBConn.createStatement();
                 statement.executeUpdate(updatePendingTransaction);
@@ -934,7 +960,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         } catch(SQLException e) {
             System.err.println("Connection Failed verifying existing Pending Transaction! Check output console " + e);
         }
-        return true;
+        return aux;
     }
 
     public String popPendingTransaction(int userID, int ideiaID) {
@@ -957,10 +983,12 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         String verifyTransaction = "SELECT * FROM PENDING_TRANSACTION " +
                 "WHERE IDIDEIA = " + ideiaID;
         int idCompra, idIdeia, maxPrice, newPrice, nr_share, idVende;
+
         boolean cond = false;
         try{
             Statement statement = DBConn.createStatement();
             ResultSet rs = statement.executeQuery(verifyTransaction);
+
             while(rs.next()) {
                 idCompra = rs.getInt(1);
                 idIdeia = rs.getInt(2);
@@ -970,13 +998,17 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 String dataString = dateFormat.format(new Date());
                 idVende = getIDVendeByIdeia(idIdeia, maxPrice, idCompra);
                 int aux, dif_aux;
+
                 while(idVende > 0){
+                    //System.out.println("A:"+idCompra+" "+idVende+" "+idIdeia+" "+nr_share+" "+maxPrice);
                     if((aux = minimo_share(idIdeia,idVende, nr_share)) > 0){
                         pendingTransaction(idVende, idCompra, idIdeia, aux, newPrice, maxPrice, dataString);
                         dif_aux = nr_share - aux;
                         cond = true;
+
                         if(dif_aux == 0) {
                             //System.out.println("DELETE " + dif_aux);
+
                             String updatePendingTransaction = "DELETE FROM PENDING_TRANSACTION " +
                                     "WHERE IDUSER = " + idCompra + " AND IDIDEIA = " + ideiaID;
                             try{
@@ -985,11 +1017,13 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                             } catch(SQLException e) {
                                 System.err.println("Connection Failed Removing User_share with 0! Check output console " + e);
                                 RollBack();
-                                cond = false;
+                                return false;
                             }
+                            idVende = 0;
                         }
                         else{
                             //System.out.println("UPDATE " + dif_aux);
+
                             String actualizaPrice = "UPDATE PENDING_TRANSACTION SET NR_SHARE = " + dif_aux +
                                     " WHERE IDIDEIA = " + idIdeia + " AND IDUSER = " + idCompra;
                             try{
@@ -998,24 +1032,24 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                             } catch(SQLException e) {
                                 System.err.println("Connection Failed Actualizar Preço! Check output console " + e);
                                 RollBack();
-                                cond = false;
+                                return false;
                             }
+                            nr_share = dif_aux;
+                            idVende = getIDVendeByIdeia(idIdeia, maxPrice, idCompra);
+                            dataString = dateFormat.format(new Date());
                         }
                     }
-                    dataString = dateFormat.format(new Date());
-                    idVende = getIDVendeByIdeia(idIdeia, maxPrice, idCompra);
                 }
             }
             rs.close();
             statement.close();
-            //System.out.println("Foram vistos e satisfeitos, dentro do possivel, todos os pedidos de compra e venda para a ideia " + ideiaID);
-            return cond;
         } catch(SQLException e) {
             System.err.println("Connection Failed verifying Execute Pending Transaction! Check output console " + e);
             RollBack();
             cond = false;
         } catch (RemoteException e) {
             System.err.println("Remote Failure Executing Pending Transaction! Check output console " + e);
+            RollBack();
             cond = false;
         }
         return cond;
@@ -1032,7 +1066,8 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             //System.out.println(nr_share + " -> " + sharesVenda);
             rs.close();
             statement.close();
-            if(sharesVenda <= nr_share) return sharesVenda;
+            if(sharesVenda <= nr_share)
+                return sharesVenda;
             return nr_share;
         } catch(SQLException e) {
             System.err.println("Connection Failed verifying Execute Pending Transaction! Check output console " + e);
@@ -1043,7 +1078,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     private int getIDVendeByIdeia(int idIdeia, int precoMax, int idUser)  {
         String getVendedorByIDeia = "SELECT IDUSER FROM USER_SHARE "
-                + "WHERE IDIDEIA = " + idIdeia + " AND PRICE <= " + precoMax + " AND IDUSER != " + idUser;
+                + "WHERE IDIDEIA = " + idIdeia + " AND PRICE <= " + precoMax + " AND IDUSER != " + idUser + " ORDER BY PRICE";
         int cond = 0;
         try {
             Statement statement = DBConn.createStatement();
@@ -1064,7 +1099,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         if(isPossible){
             if(transaccaoAcceptedIdeia(idVende, idCompra, idIdeia, sharesToBuy, newPrice, precoCompra, dataString));
             try {
+
                 DBConn.commit();
+                insereUserDataOffline(idVende,idCompra);
                 return true;
             } catch (SQLException e) {System.err.println("Connection Failed Commiting! Check output console " + e);
                 RollBack();
@@ -1301,7 +1338,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 return false;
             }
             statement.close();
-            
         } catch (SQLException e) {
             System.err.println(e);
             return false;

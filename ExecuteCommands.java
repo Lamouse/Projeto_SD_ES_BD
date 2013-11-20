@@ -1,5 +1,3 @@
-package projectometa2teste;
-
 
 public interface ExecuteCommands extends java.rmi.Remote {
     public boolean addPessoa(String username, String password) throws java.rmi.RemoteException;
