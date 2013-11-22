@@ -302,6 +302,14 @@ public class Programa_Cliente extends javax.swing.JFrame {
             }
         }
 
+        private double tryParseDouble(String text) {
+            try {
+                return Double.parseDouble(text);
+            } catch (NumberFormatException e) {
+                return (double)0;
+            }
+        }
+
         private void criaLigacao() {
             int cont2 = 3, cont;
             while(cont2 > 0){
@@ -743,6 +751,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
             jLabel_creat_msg.setText("Mensagem:");
 
             jComboBox_creat.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Neutro", "A Favor", "Contra"}));
+            jComboBox_creat.setEnabled(false);
 
             jTextField_creat_topic.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
             jTextField_creat_topic.setText("<(id_topico1),(id_topico2),...>");
@@ -753,6 +762,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
             jTextField_creat_idea.setText("<(id_ideia1),(id_ideia2),...>");
             jTextField_creat_idea.setMaximumSize(new java.awt.Dimension(225, 28));
             jTextField_creat_idea.setMinimumSize(new java.awt.Dimension(225, 28));
+            jTextField_creat_idea.setEnabled(false);
 
             jLabel5_creat_nota1.setText("No caso da ideia estar apenas associada ao tópico, introduzir \"none\".");
 
@@ -787,13 +797,14 @@ public class Programa_Cliente extends javax.swing.JFrame {
             jLabel_creat_share.setText("Número de Shares:");
 
             jTextField_creat_share.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-            jTextField_creat_share.setText("100");
+            jTextField_creat_share.setText("100000");
+            jTextField_creat_share.setEnabled(false);
 
             jLabel_creat_preco.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-            jLabel_creat_preco.setText("Preço por Share:");
+            jLabel_creat_preco.setText("Investimento:");
 
             jTextField_creat_preco.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-            jTextField_creat_preco.setText("2");
+            jTextField_creat_preco.setText("1000");
 
             javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
             jPanel8.setLayout(jPanel8Layout);
@@ -1350,15 +1361,15 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 String[] aux = jTextField_pedido_preco.getText().split("/");
                 int id = tryParse(jTextField_pedido_id.getText()), share = tryParse(jTextField_pedido_share.getText());
                 if(aux.length == 2){
-                    int preco_c = tryParse(aux[0]), preco_n = tryParse(aux[1]);
+                    double preco_c = tryParseDouble(aux[0]), preco_n = tryParseDouble(aux[1]);
                     if("0".equals(jTextField_pedido_share.getText()) || share > 0)
                         cond = true;
                     if(id > 0 && preco_c > 0 && preco_n > 0 && cond == true){
                         Mensagem msg = new Mensagem(17,user_id);
                         msg.addList(Integer.toString(id));
                         msg.addList(Integer.toString(share));
-                        msg.addList(Integer.toString(preco_n));
-                        msg.addList(Integer.toString(preco_c));
+                        msg.addList(Double.toString(preco_n));
+                        msg.addList(Double.toString(preco_c));
                         thread_s.addList(msg);
                     }
                 }
@@ -1390,20 +1401,20 @@ public class Programa_Cliente extends javax.swing.JFrame {
 
         private void jButton_creatActionPerformed(java.awt.event.ActionEvent evt) {
             String topico = jTextField_creat_topic.getText();
-            String ideia = jTextField_creat_idea.getText();
-            String opiniao = (String)jComboBox_creat.getSelectedItem();
+            /*String ideia = jTextField_creat_idea.getText();
+            String opiniao = (String)jComboBox_creat.getSelectedItem();*/
             String msg = jTextArea_creat_msg.getText();
             String file = jTextField_creat_anexo.getText();
-            int nr_share = tryParse(jTextField_creat_share.getText());
+            /*int nr_share = tryParse(jTextField_creat_share.getText());*/
             int preco_share = tryParse(jTextField_creat_preco.getText());
 
-            if("".equals(topico.replace(" ", "")) || "".equals(ideia.replace(" ", "")) || "".equals(msg.replace(" ", "")) || "".equals(file.replace(" ", ""))|| nr_share <= 0 || preco_share <= 0){
+            if("".equals(topico.replace(" ", "")) || "".equals(msg.replace(" ", "")) || "".equals(file.replace(" ", "")) || preco_share <= 0){
                 jLabel_creat_aviso.setText("Erro num dos campos.");
             }
             else{
                 Mensagem msg_aux = new Mensagem(6,user_id);
-                if("none".equals(ideia))
-                    ideia = "";
+                /*if("none".equals(ideia))
+                    ideia = "";   */
 
                 if(!"none".equals(file))
     			    msg_aux.addFile(file);
@@ -1413,7 +1424,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 //msg_aux.addList(ideia);
                 msg_aux.addList(topico);
                 msg_aux.addList(Integer.toString(user_id));
-                msg_aux.addList(Integer.toString(nr_share));
+                //msg_aux.addList(Integer.toString(nr_share));
                 msg_aux.addList(Integer.toString(preco_share));
                 thread_s.addList(msg_aux);
             }
@@ -1424,6 +1435,14 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 return new Integer(text);
             } catch (NumberFormatException e) {
                 return 0;
+            }
+        }
+
+        private double tryParseDouble(String text) {
+            try {
+                return Double.parseDouble(text);
+            } catch (NumberFormatException e) {
+                return (double)0;
             }
         }
 
@@ -1667,7 +1686,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
             thread_s.addList(aux_msg);
         }
 
-        private javax.swing.JPanel add_buy_idea(final int idideia, final int iduser, final int preco, int nr_share) {
+        private javax.swing.JPanel add_buy_idea(final int idideia, final int iduser, final double preco, int nr_share) {
             javax.swing.JPanel jPanel_idea_buy = new javax.swing.JPanel();
             javax.swing.JLabel jLabel_text_nr_share = new javax.swing.JLabel();
             javax.swing.JLabel jLabel_nr_share = new javax.swing.JLabel();
@@ -1683,7 +1702,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
             jLabel_text_nr_share.setText("Número de Shares");
             jLabel_nr_share.setText(Integer.toString(nr_share));
             jLabel_text_price_share.setText("Preço de cada Share");
-            jLabel_price_share.setText(Integer.toString(preco));
+            jLabel_price_share.setText(Double.toString(preco));
             jLabel_nr_buy_share.setText("Número de Shares a comprar");
             jLabel_new_price_share.setText("Novo Preço de cada Share");
             jButton_buy.setText("Comprar");
@@ -1745,9 +1764,9 @@ public class Programa_Cliente extends javax.swing.JFrame {
             return jPanel_idea_buy;
         }
 
-        private void jButton_buyActionPerformed(java.awt.event.ActionEvent evt, int idideia, int iduser, javax.swing.JTextField JText_nr_share, javax.swing.JTextField JText_new_price, int preco) {
+        private void jButton_buyActionPerformed(java.awt.event.ActionEvent evt, int idideia, int iduser, javax.swing.JTextField JText_nr_share, javax.swing.JTextField JText_new_price, double preco) {
             if(!"".equals(JText_nr_share.getText().replace(" ","")) && !"".equals(JText_new_price.getText().replace(" ",""))){
-                if(tryParse(JText_nr_share.getText()) > 0 && tryParse(JText_new_price.getText()) > 0){
+                if(tryParse(JText_nr_share.getText()) > 0 && tryParseDouble(JText_new_price.getText()) > 0){
                     Mensagem msg_aux = new Mensagem(7,user_id);
                     //Mensagem msg_teste = new Mensagem(7,user_id);
 
@@ -1756,7 +1775,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
                     msg_aux.addList(Integer.toString(idideia));
                     msg_aux.addList(JText_nr_share.getText());
                     msg_aux.addList(JText_new_price.getText());
-                    msg_aux.addList(Integer.toString(preco));
+                    msg_aux.addList(Double.toString(preco));
 
                     /*msg_teste.addList(Integer.toString(iduser));
                     msg_teste.addList(Integer.toString(user_id));
@@ -2063,7 +2082,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
 
         private void jButton_atualizaActionPerformed(java.awt.event.ActionEvent evt, int user_s_aux, javax.swing.JTextField JTextField_aux, javax.swing.JLabel jlabel_aux) {
             Mensagem msg = new Mensagem(12,user_id);
-            if(tryParse(JTextField_aux.getText()) > 0){
+            if(tryParseDouble(JTextField_aux.getText()) > 0){
                 msg.addList(Integer.toString(user_s_aux));
                 msg.addList(JTextField_aux.getText());
                 thread_s.addList(msg);
@@ -2110,6 +2129,14 @@ public class Programa_Cliente extends javax.swing.JFrame {
             }
         }
 
+        private double tryParseDouble(String text) {
+            try {
+                return Double.parseDouble(text);
+            } catch (NumberFormatException e) {
+                return (double)0;
+            }
+        }
+
         private void Output(Mensagem msg){
             if(msg != null){
                 ArrayList<javax.swing.JPanel> list_aux = new ArrayList<javax.swing.JPanel>();
@@ -2131,8 +2158,13 @@ public class Programa_Cliente extends javax.swing.JFrame {
                         new Menu_Principal(msg.popList(),msg.popList());
 
                         String str_aux = msg.popList();
-                        if(!"".equals(str_aux)) {
-                            jLabel_msg_fundo.setText("O utilizador " + str_aux.replace("||",", ").replace("|"," ") + " acabou de comprar shares suas.");
+                        if(str_aux.contains(Integer.toString(user_id))){
+                            jLabel_msg_fundo.setText("Acabou de comprar shares");
+                        }
+                        else{
+                            if(!"".equals(str_aux)) {
+                                jLabel_msg_fundo.setText("O utilizador " + str_aux.replace("||",", ").replace("|"," ") + " acabou de comprar shares suas.");
+                            }
                         }
                     }
                     else{
@@ -2189,12 +2221,12 @@ public class Programa_Cliente extends javax.swing.JFrame {
                         tipo = 6;
                     }
                     jTextField_creat_topic.setText("<(id_topico1),(id_topico2),...>");
-                    jTextField_creat_idea.setText("<(id_ideia1),(id_ideia2),...>");
+                    //jTextField_creat_idea.setText("<(id_ideia1),(id_ideia2),...>");
                     jTextField_creat_anexo.setText("<(Path_Anexo)>");
-                    jComboBox_creat.setSelectedIndex(0);
+                    //jComboBox_creat.setSelectedIndex(0);
                     jTextArea_creat_msg.setText("");
-                    jTextField_creat_share.setText("100");
-                    jTextField_creat_preco.setText("2");
+                    //jTextField_creat_share.setText("100000");
+                    jTextField_creat_preco.setText("1000");
                 }
                 else if(tipo == -7 || tipo == 7){
                     if(tipo == -7){
@@ -2213,7 +2245,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
                         jLabel_buy_error.setText("");
                         int i, length = msg.getListSize()/3;
                         for(i=0;i<length;i++) {
-                            list_aux.add(add_buy_idea(msg.getIdUser(),tryParse(msg.popList()),tryParse(msg.popList()),tryParse(msg.popList())));
+                            list_aux.add(add_buy_idea(msg.getIdUser(), tryParse(msg.popList()), tryParseDouble(msg.popList()), tryParse(msg.popList())));
                         }
                         atualiza_jpanel(jPanel_buy, list_aux);
                     }
@@ -2265,8 +2297,14 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 }
                 else if(tipo == 14){
                     String str_aux = msg.popList();
-                    if(!"".equals(str_aux))
+                    if(str_aux.contains(Integer.toString(user_id))){
+                        jLabel_msg_fundo.setText("Acabou de comprar shares");
+                    }
+                    else{
+                        if(!"".equals(str_aux)) {
                             jLabel_msg_fundo.setText("O utilizador " + str_aux.replace("||",", ").replace("|"," ") + " acabou de comprar shares suas.");
+                        }
+                    }
                 }
                 else if(tipo == 15){
                     if(msg.getFile() != null){
