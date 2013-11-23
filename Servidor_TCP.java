@@ -117,6 +117,14 @@ public class Servidor_TCP {
 				return 0;
 			}
 		}
+
+        private double tryParseDouble(String text) {
+            try {
+                return Double.parseDouble(text);
+            } catch (NumberFormatException e) {
+                return (double)0;
+            }
+        }
 		
 		public void run() {
             boolean cond = false;
@@ -177,7 +185,7 @@ public class Servidor_TCP {
                             objectOutput.writeObject(msg);
                         }else if(tipo == 6) {
                             System.out.println("Pedido para a criação de ideia");
-                            if(srmi.addNewIdeia(/*data.popList(), data.popList(), */data.popList(), data.popList(), tryParse(data.popList()), tryParse(data.popList()), tryParse(data.popList()), data.getData(), data.getFile()) == true)
+                            if(srmi.addNewIdeia(data.popList(), data.popList(), tryParse(data.popList()), tryParse(data.popList()), data.getData(), data.getFile()))
                                 msg = new Mensagem(6,data.getIdUser());
                             else
                                 msg = new Mensagem(-6,data.getIdUser());
@@ -185,7 +193,7 @@ public class Servidor_TCP {
                         }else if(tipo == 7) {
                             System.out.println("Compra de Shares");
                             int id_ideia = tryParse(data.getElemList(2)), id_vende = tryParse(data.getElemList(0)), id_compra = tryParse(data.getElemList(1));
-                            if(srmi.pendingTransaction(tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()), data.getData()) == true){
+                            if(srmi.pendingTransaction(tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),tryParseDouble(data.popList()),tryParseDouble(data.popList()), data.getData()) == true){
                                 srmi.verifyExecutePendingTransaction(id_ideia);
                                 msg = new Mensagem(7,id_ideia);
                             }else
@@ -213,7 +221,7 @@ public class Servidor_TCP {
                         }else if(tipo == 12) {
                             System.out.println("Pedido para a atualização de preço");
                             int id_ideia = tryParse(data.getElemList(1));
-                            srmi.changeSharePrice(data.getIdUser(), tryParse(data.popList()), tryParse(data.popList()));
+                            srmi.changeSharePrice(data.getIdUser(), tryParse(data.popList()), tryParseDouble(data.popList()));
                             srmi.verifyExecutePendingTransaction(id_ideia);
                             objectOutput.writeObject(new Mensagem(12,data.getIdUser()));
                         }else if(tipo == 13) {
@@ -240,7 +248,7 @@ public class Servidor_TCP {
                             System.out.println("Pedido para a compra de shares");
                             Mensagem msg_aux = new Mensagem(17,0);
                             int idideia = tryParse(data.getElemList(0));
-                            if(srmi.addPendingTransaction(data.getIdUser(),tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),tryParse(data.popList()),data.getData())==true){
+                            if(srmi.addPendingTransaction(data.getIdUser(),tryParse(data.popList()),tryParse(data.popList()),tryParseDouble(data.popList()),tryParseDouble(data.popList()),data.getData())==true){
                                 System.out.println("COMPRA ACEITE");
                                 srmi.verifyExecutePendingTransaction(idideia);
                             }
