@@ -427,7 +427,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     public int hasUSer(String username, String password) throws RemoteException {
         String test = "SELECT * FROM UTILIZADOR WHERE USERNAME = '" + username + "' and PASSWORD = '" + password + "'";
-        int aux = 0;
+        int aux = -1;
         try {
             Statement statement = DBConn.createStatement();
             ResultSet rs = statement.executeQuery(test);
@@ -781,7 +781,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             partes = topicos.split(",");
             String insertIdeia = "INSERT INTO IDEIA VALUES"
                     + "(" + ideiaID + ",'" + ideiaText + "'," +
-                    startShares + "," + value + "," + 1 + "," + 1 + ",'" + newName +"')";
+                    startShares + "," + value + "," + 1 + "," + 0 + ",'" + newName +"')";
 
                     /*+ "(" + ideiaID + ",'" + ideiaText + "','" +
                     type + "'," + startShares + ",'" + newName + "')";*/
@@ -964,6 +964,25 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             int totalShares = rs2.getInt(1);
             if(nrShares == totalShares)
                 cond = true;
+
+            rs1.close();
+            rs2.close();
+            statement.close();
+        } catch(SQLException e) {
+            System.err.println("Connection Failed verifiyng Total Shares for removal! Check output console " + e);
+        }
+        return cond;
+    }
+
+    private boolean verifyExistingIdea(int ideiaID) {
+        String aux = "SELECT IDIDEIA FROM IDEIA WHERE IS_FAME = 0 and IDIDEIA = " + ideiaID;
+        boolean cond = false;
+        try{
+            Statement statement = DBConn.createStatement();
+            ResultSet rs = statement.executeQuery(aux);
+            if(rs.next())
+                cond = true;
+            rs.close();
             statement.close();
         } catch(SQLException e) {
             System.err.println("Connection Failed verifiyng Total Shares for removal! Check output console " + e);
@@ -972,47 +991,48 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     public boolean addPendingTransaction(int userID, int ideiaID, int nr_shares, double newPrice, double maxPrice, String dataString) throws RemoteException {
-        if(!verifyExistingPendingTransaction(userID, ideiaID)) {
-            if(nr_shares > 0){
-                String addPendingTransaction = "INSERT INTO PENDING_TRANSACTION VALUES (" +
-                        userID + ", " + ideiaID + ", " + newPrice + ", " + maxPrice + ", " + nr_shares + ")";
+        if(verifyExistingIdea(ideiaID)){
+            if(!verifyExistingPendingTransaction(userID, ideiaID)) {
+                if(nr_shares > 0){
+                    String addPendingTransaction = "INSERT INTO PENDING_TRANSACTION VALUES (" +
+                            userID + ", " + ideiaID + ", " + newPrice + ", " + maxPrice + ", " + nr_shares + ")";
 
-                //System.out.println(addPendingTransaction);
+                    //System.out.println(addPendingTransaction);
+
+                    try{
+                        Statement statement = DBConn.createStatement();
+                        statement.executeUpdate(addPendingTransaction);
+                        DBConn.commit();
+                        statement.close();
+                        return true;
+                    } catch(SQLException e) {
+                        System.err.println("Connection Failed adding Pending Transaction! Check output console " + e);
+                        RollBack();
+                        return false;
+                    }
+                }
+            }
+            else{
+                String updatePendingTransaction;
+                updatePendingTransaction = "UPDATE PENDING_TRANSACTION " +
+                        "SET NR_SHARE = " + nr_shares + ", NEWPRICE = " + newPrice + ", MAXPRICE = "+ maxPrice +
+                        " WHERE IDUSER = "  + userID + " AND IDIDEIA = " + ideiaID;
+                /*if(nr_shares == 0)   updatePendingTransaction = "DELETE FROM PENDING_TRANSACTION " +
+                        "WHERE IDUSER = " + userID + "AND IDIDEIA = " + ideiaID;
+                System.out.println(updatePendingTransaction);*/
 
                 try{
                     Statement statement = DBConn.createStatement();
-                    statement.executeUpdate(addPendingTransaction);
+                    statement.executeUpdate(updatePendingTransaction);
                     DBConn.commit();
+                    addTransactionDescription(userID, "Utilizador " + userID + " mandou pedido de compra de " +nr_shares + " shares da ideia " +
+                            ideiaID + " pelo preço de " + maxPrice, dataString);
                     statement.close();
                     return true;
                 } catch(SQLException e) {
-                    System.err.println("Connection Failed adding Pending Transaction! Check output console " + e);
+                    System.err.println("Connection Failed updating Pending Transaction! Check output console " + e);
                     RollBack();
-                    return false;
                 }
-            }
-        }
-        else{
-            String updatePendingTransaction;
-            updatePendingTransaction = "UPDATE PENDING_TRANSACTION " +
-                    "SET NR_SHARE = " + nr_shares + ", NEWPRICE = " + newPrice + ", MAXPRICE = "+ maxPrice +
-                    " WHERE IDUSER = "  + userID + " AND IDIDEIA = " + ideiaID;
-            if(nr_shares == 0)   updatePendingTransaction = "DELETE FROM PENDING_TRANSACTION " +
-                    "WHERE IDUSER = " + userID + "AND IDIDEIA = " + ideiaID;
-
-            //System.out.println(updatePendingTransaction);
-
-            try{
-                Statement statement = DBConn.createStatement();
-                statement.executeUpdate(updatePendingTransaction);
-                DBConn.commit();
-                addTransactionDescription(userID, "Utilizador " + userID + " mandou pedido de compra de " +nr_shares + " shares da ideia " +
-                        ideiaID + " pelo preço de " + maxPrice, dataString);
-                statement.close();
-                return true;
-            } catch(SQLException e) {
-                System.err.println("Connection Failed updating Pending Transaction! Check output console " + e);
-                RollBack();
             }
         }
         return false;
@@ -1083,38 +1103,27 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                         dif_aux = nr_share - aux;
                         cond = true;
 
-                        if(dif_aux == 0) {
-                            //System.out.println("DELETE " + dif_aux);
+                        //System.out.println("UPDATE " + dif_aux);
 
-                            String updatePendingTransaction = "DELETE FROM PENDING_TRANSACTION " +
-                                    "WHERE IDUSER = " + idCompra + " AND IDIDEIA = " + ideiaID;
-                            try{
-                                statement.executeUpdate(updatePendingTransaction);
-                                DBConn.commit();
-                            } catch(SQLException e) {
-                                System.err.println("Connection Failed Removing User_share with 0! Check output console " + e);
-                                RollBack();
-                                return false;
-                            }
+                        String actualizaPrice = "UPDATE PENDING_TRANSACTION SET NR_SHARE = " + dif_aux +
+                                " WHERE IDIDEIA = " + idIdeia + " AND IDUSER = " + idCompra;
+                        try{
+                            statement.executeUpdate(actualizaPrice);
+                            DBConn.commit();
+                        } catch(SQLException e) {
+                            System.err.println("Connection Failed Actualizar Preço! Check output console " + e);
+                            RollBack();
+                            return false;
+                        }
+
+                        if(dif_aux == 0) {
                             idVende = 0;
                         }
                         else{
-                            //System.out.println("UPDATE " + dif_aux);
-
-                            String actualizaPrice = "UPDATE PENDING_TRANSACTION SET NR_SHARE = " + dif_aux +
-                                    " WHERE IDIDEIA = " + idIdeia + " AND IDUSER = " + idCompra;
-                            try{
-                                statement.executeUpdate(actualizaPrice);
-                                DBConn.commit();
-                            } catch(SQLException e) {
-                                System.err.println("Connection Failed Actualizar Preço! Check output console " + e);
-                                RollBack();
-                                return false;
-                            }
-                            nr_share = dif_aux;
-                            idVende = getIDVendeByIdeia(idIdeia, maxPrice, idCompra);
-                            dataString = dateFormat.format(new Date());
-                        }
+	                        nr_share = dif_aux;
+	                        idVende = getIDVendeByIdeia(idIdeia, maxPrice, idCompra);
+	                        dataString = dateFormat.format(new Date());
+                    	}
                     }
                 }
             }
@@ -1309,8 +1318,8 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             if(!bounceMoneyAndShares(idVende, idCompra, ideiaTransaction, sharesToBuy, newPrice, dataString))
                 didItWork = false;
         }
-        if(!verifyRemoveAttributeSeller(idVende, ideiaTransaction))
-            didItWork = false;
+        /*if(!verifyRemoveAttributeSeller(idVende, ideiaTransaction))
+            didItWork = false;*/
 
         if(!set_isfirst(ideiaTransaction))
             didItWork = false;

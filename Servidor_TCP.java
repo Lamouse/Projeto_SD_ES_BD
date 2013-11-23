@@ -152,7 +152,7 @@ public class Servidor_TCP {
                         if(tipo == 1){
                             System.out.println("Confirmação do Login do User " + data.getElemList(0));
                             aux = srmi.hasUSer(data.getElemList(0), data.getElemList(1));
-                            if(aux!=0 && idUser.indexOf(aux) == -1){
+                            if(aux!=-1 && idUser.indexOf(aux) == -1){
                                 msg = new Mensagem(1,data.getIdUser());
                                 msg.addList(Integer.toString(aux));
                                 msg.addList(data.getElemList(0));

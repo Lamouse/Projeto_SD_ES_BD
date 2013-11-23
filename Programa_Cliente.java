@@ -1471,7 +1471,7 @@ public class Programa_Cliente extends javax.swing.JFrame {
         public void run() {
             while(true){
                 try {
-                    Thread.sleep(60000);
+                    Thread.sleep(30000);
                     thread_s.addList(new Mensagem(14,user_id));
                 } catch (InterruptedException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
