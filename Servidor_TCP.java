@@ -254,6 +254,12 @@ public class Servidor_TCP {
                             }
                             objectOutput.writeObject(msg_aux);
                         }
+                        else if(tipo == 18) {
+                            System.out.println("Pedido para a compra de shares pelo root");
+                            Mensagem msg_aux = new Mensagem(18,0);
+                            srmi.buy_all(tryParse(data.popList()));
+                            objectOutput.writeObject(msg_aux);
+                        }
                         objectOutput.flush();
                     }
                 } catch (java.rmi.ConnectException e) {

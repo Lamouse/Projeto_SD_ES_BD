@@ -700,6 +700,12 @@ public class Programa_Cliente extends javax.swing.JFrame {
 
             jLabel16.setText("jLabel16");
 
+            if(user_id == 0){
+                jTextField_pedido_preco.setEnabled(false);
+                jTextField_pedido_share.setText("100000");
+                jTextField_pedido_share.setEnabled(false);
+            }
+
             javax.swing.GroupLayout jPanel20Layout = new javax.swing.GroupLayout(jPanel20);
             jPanel20.setLayout(jPanel20Layout);
             jPanel20Layout.setHorizontalGroup(
@@ -1357,26 +1363,38 @@ public class Programa_Cliente extends javax.swing.JFrame {
 
         private void jButton_pedidoActionPerformed(java.awt.event.ActionEvent evt) {
             boolean cond = false;
-            if(!"".equals(jTextField_pedido_id.getText().replace(" ","")) && !"".equals(jTextField_pedido_preco.getText().replace(" ","")) && !"".equals(jTextField_pedido_share.getText().replace(" ",""))){
-                String[] aux = jTextField_pedido_preco.getText().split("/");
-                int id = tryParse(jTextField_pedido_id.getText()), share = tryParse(jTextField_pedido_share.getText());
-                if(aux.length == 2){
-                    double preco_c = tryParseDouble(aux[0]), preco_n = tryParseDouble(aux[1]);
-                    if("0".equals(jTextField_pedido_share.getText()) || share > 0)
-                        cond = true;
-                    if(id > 0 && preco_c > 0 && preco_n > 0 && cond == true){
-                        Mensagem msg = new Mensagem(17,user_id);
-                        msg.addList(Integer.toString(id));
-                        msg.addList(Integer.toString(share));
-                        msg.addList(Double.toString(preco_n));
-                        msg.addList(Double.toString(preco_c));
-                        thread_s.addList(msg);
+            if(user_id == 0){
+                int id = tryParse(jTextField_pedido_id.getText());
+                if(id > 0){
+                    Mensagem msg = new Mensagem(18,user_id);
+                    msg.addList(Integer.toString(id));
+                    thread_s.addList(msg);
+                }
+            }
+            else{
+                if(!"".equals(jTextField_pedido_id.getText().replace(" ","")) && !"".equals(jTextField_pedido_preco.getText().replace(" ","")) && !"".equals(jTextField_pedido_share.getText().replace(" ",""))){
+                    String[] aux = jTextField_pedido_preco.getText().split("/");
+                    int id = tryParse(jTextField_pedido_id.getText()), share = tryParse(jTextField_pedido_share.getText());
+                    if(aux.length == 2){
+                        double preco_c = tryParseDouble(aux[0]), preco_n = tryParseDouble(aux[1]);
+                        if("0".equals(jTextField_pedido_share.getText()) || share > 0)
+                            cond = true;
+                        if(id > 0 && preco_c > 0 && preco_n > 0 && cond == true){
+                            Mensagem msg = new Mensagem(17,user_id);
+                            msg.addList(Integer.toString(id));
+                            msg.addList(Integer.toString(share));
+                            msg.addList(Double.toString(preco_n));
+                            msg.addList(Double.toString(preco_c));
+                            thread_s.addList(msg);
+                        }
                     }
                 }
             }
             jTextField_pedido_id.setText("");
-            jTextField_pedido_preco.setText("");
-            jTextField_pedido_share.setText("");
+            if(user_id != 0){
+                jTextField_pedido_preco.setText("");
+                jTextField_pedido_share.setText("");
+            }
         }
 
         private void jButton_topicoActionPerformed(java.awt.event.ActionEvent evt) {
@@ -1706,6 +1724,8 @@ public class Programa_Cliente extends javax.swing.JFrame {
             jLabel_nr_buy_share.setText("Número de Shares a comprar");
             jLabel_new_price_share.setText("Novo Preço de cada Share");
             jButton_buy.setText("Comprar");
+            if(user_id == 0)
+                jButton_buy.setEnabled(false);
             jButton_buy.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     jButton_buyActionPerformed(evt, idideia, iduser, jTextField_nr_buy_share, jTextField_new_price_share, preco);
@@ -2264,7 +2284,10 @@ public class Programa_Cliente extends javax.swing.JFrame {
                         tipo = 9;
                 }
                 else if(tipo == 10){
-                    label_user_money.setText(msg.popList());
+                    if(user_id == 0)
+                        label_user_money.setText("wow such infinite!");
+                    else
+                        label_user_money.setText(msg.popList());
                     String hist = "";
                     int length = msg.getListSize()/2;
                     for(int i=0;i<length;i++){

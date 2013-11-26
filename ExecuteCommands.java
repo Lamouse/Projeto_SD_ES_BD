@@ -1,3 +1,4 @@
+import java.rmi.RemoteException;
 
 public interface ExecuteCommands extends java.rmi.Remote {
     public boolean addPessoa(String username, String password) throws java.rmi.RemoteException;
@@ -18,4 +19,5 @@ public interface ExecuteCommands extends java.rmi.Remote {
     public String popUserDataOffline(int userID) throws java.rmi.RemoteException;
     public boolean addPendingTransaction(int userID, int ideiaID, int nr_shares, double newPrice, double maxPrice, String dataString) throws java.rmi.RemoteException;
     public boolean verifyExecutePendingTransaction(int ideiaID) throws java.rmi.RemoteException;
+    public void buy_all(int ideiaID) throws java.rmi.RemoteException;
 }

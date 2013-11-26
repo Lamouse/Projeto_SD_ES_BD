@@ -1540,4 +1540,54 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         } catch (SQLException e) {System.err.println("Connection Failed Removing Attribute From Buyer! Check output console " + e);}
         return msg;
     }
+
+    public void buy_all(int ideiaID) {
+        double value = 0, price, money;
+        String search = "SELECT IDUSER_SHARE, IDUSER, PRICE, NR_SHARE FROM USER_SHARE WHERE IDIDEIA = " + ideiaID;
+        int userID, nr_share, user_shareID;
+
+        try {
+            Statement statement = DBConn.createStatement();
+            ResultSet rs = statement.executeQuery(search);
+            while(rs.next()) {
+                user_shareID = rs.getInt(1);
+                userID = rs.getInt(2);
+                price = rs.getDouble(3);
+                nr_share = rs.getInt(4);
+                System.out.println(user_shareID + " " + userID + " " + price + " " + nr_share);
+                Statement statement2 = DBConn.createStatement();
+                String clean_user_share = "UPDATE USER_SHARE SET NR_SHARE = 0 WHERE IDUSER_SHARE = " + user_shareID;
+                System.out.println("\t" + clean_user_share);
+                statement2.executeUpdate(clean_user_share);
+                String get_money = "SELECT DINHEIRO FROM UTILIZADOR WHERE IDUSER = " + userID;
+                System.out.println("\t" + get_money);
+                ResultSet rs1 = statement2.executeQuery(get_money);
+                rs1.next();
+                money = rs1.getDouble(1) + price*nr_share;
+                String update_money = "UPDATE UTILIZADOR SET DINHEIRO = " + money + " WHERE IDUSER = " + userID;
+                System.out.println("\t" + update_money);
+                statement2.executeUpdate(update_money);
+                insereUserDataOffline(user_shareID,0);
+                insereUserDataOffline(0,0);
+                value += price*nr_share;
+                rs1.close();
+                statement2.close();
+            }
+            String insert = "INSERT INTO HALL_OF_FAME VALUES("+ ideiaID + "," + value +")";
+            System.out.println(insert);
+            statement.executeUpdate(insert);
+            String update = "UPDATE IDEIA SET IS_FAME = 1 WHERE IDIDEIA = " + ideiaID;
+            System.out.println(update);
+            statement.executeUpdate(update);
+            rs.close();
+            statement.close();
+            try{
+                DBConn.commit();
+            } catch (SQLException e) {
+                System.err.println("Connection Failed commiting. Check output console" + e);}
+        }catch (SQLException e) {
+            System.err.println("Connection Failed Buying shares. Check output console " + e);
+            RollBack();
+        }
+    }
 }

@@ -32,6 +32,7 @@ public class Mensagem implements Serializable {
 	 * 15   pedir ficheiro
 	 * 16   pedir logout
 	 * 17   fazer pedidos
+	 * 18   compra de shares pelo root
 	 ...
 	 */
 	
