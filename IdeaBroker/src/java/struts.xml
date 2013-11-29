@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- The core configuration file for the framework is the default (struts.xml) file
+and should reside on the classpath of the webapp (generally /WEB-INF/classes). -->
+
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+
+    <!-- devMode equals mode debug information and reload everything for every request -->
+    <constant name="struts.devMode" value="true" />
+
+    <package name="direstruts" extends="struts-default">
+	
+        <default-action-ref name="index"/>
+
+        <global-results>
+            <result name="error">/error.jsp</result>
+        </global-results>
+
+        <!-- all exceptions not caught by the application will lead to error.jsp -->
+        <global-exception-mappings>
+            <exception-mapping exception="java.lang.Exception" result="error"/>
+        </global-exception-mappings>
+
+        <!-- 'index' action leads to the view provided by index.jsp -->
+        <action name="index">
+            <result>/index.jsp</result>
+        </action>
+
+        <action name="login" class="direstruts.action.loginAction" method="execute">
+            <result name="success">/bysearch.jsp</result>
+        </action>
+
+        <action name="userdetails" class="direstruts.action.userdetailsAction" method="execute">
+            <result name="success">/userdetails.jsp</result>
+            <result name="notfound">/index.jsp</result>
+        </action>
+
+        <action name="createtopic" class="direstruts.action.createtopicAction" method="execute">
+            <result name="error">/jsp/error.jsp</result>
+            <result name="success">creativezone.jsp</result>
+        </action>
+
+        <action name="halloffame" class="direstruts.action.halloffameAction" method="execute">
+            <result name="success">halloffame.jsp</result>
+        </action>
+        
+        <action name="portfolio" class="direstruts.action.portfolioAction" method="execute">
+            <result name="success">portfolio.jsp</result>
+        </action>
+        
+        <action name="changeprice" class="direstruts.action.changepriceAction" method="execute">
+            <result type="redirect">/portfolio.action</result>
+        </action>
+        
+        <action name="bytopic" class="direstruts.action.bytopicAction" method="execute">
+            <result name="error">/jsp/error.jsp</result>
+            <result name="success">bytopic.jsp</result>
+        </action>
+        
+        <action name="seeidea" class="direstruts.action.seeideaAction" method="execute">
+            <result name="error">/jsp/error.jsp</result>
+            <result name="success">bytopic.jsp</result>
+        </action>
+        
+        <action name="buyshare" class="direstruts.action.buyshareAction" method="execute">
+            <result name="error">/jsp/error.jsp</result>
+            <result name="success">bytopic.jsp</result>
+        </action>
+
+        <action name="logout" class="direstruts.action.logoutAction" method="execute">
+            <result>index.jsp</result>
+        </action>
+
+        
+        <action name="createideaAction" class="direstruts.action.createideaAction" method="display">
+                <result name="none">jsp/creativezone.jsp</result>
+        </action>
+
+        <action name="createidea" class="direstruts.action.createideaAction">
+            <interceptor-ref name="exception"/>
+            <interceptor-ref name="i18n"/>
+            <interceptor-ref name="fileUpload">
+                <param name="allowedTypes">text/plain</param>
+                <param name="maximumSize">10240</param>
+            </interceptor-ref> 
+            <interceptor-ref name="params">
+                <param name="excludeParams">dojo\..*,^struts\..*</param>
+            </interceptor-ref>
+            <interceptor-ref name="validation">
+                <param name="excludeMethods">input,back,cancel,browse</param>
+            </interceptor-ref>
+            <interceptor-ref name="workflow">
+                <param name="excludeMethods">input,back,cancel,browse</param>
+            </interceptor-ref>
+
+            <result name="success">creativezone.jsp</result>
+            <result name="input">creativezone.jsp</result>
+            <result name="error">/jsp/error.jsp</result>
+        </action>
+        
+        <action name="download" class="direstruts.action.downloadAction" method="execute">
+            <result name="error">/jsp/error.jsp</result>
+            <result name="success">/jsp/previous.jsp</result>
+        </action>
+        
+    </package>
+
+</struts>
