@@ -37,7 +37,15 @@
             <br />
             <label  class="text1">ID User:</label>     <s:property value="id_user"/>
             <br />        
-            <label  class="text1">Money:</label>       <s:property value="money"/> Deicoins
+            <label  class="text1">Money:</label>       
+            <c:choose>
+                <c:when test="${id_user == 0}">
+                    wow such deicoins!
+		</c:when>
+                <c:otherwise>
+                    <s:property value="money"/> Deicoins
+                </c:otherwise>
+            </c:choose>
             <br /><br />
         </fieldset>
         <br />

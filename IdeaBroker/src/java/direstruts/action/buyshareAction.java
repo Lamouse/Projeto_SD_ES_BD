@@ -20,8 +20,24 @@ public class buyshareAction extends ActionSupport {
 	@Override
 	public String execute() throws Exception {
             System.out.println("NR:" + nr + " NP:" + newprice + " P:" + price + " IDI:" + idideia + " IDU:" + iduser);
-            buyshare();
-            return SUCCESS;
+            if(iduser != 0){
+                if(buyshare())
+                    return SUCCESS;
+            }
+            else{
+                buyallshare();
+                return SUCCESS;
+            }
+            return ERROR;
+        }
+        
+        private void buyallshare() {
+            try{
+                ExecuteCommands srmi = (ExecuteCommands)Naming.lookup("rmi://localhost:1099/ServerRMI");
+                srmi.buy_all(idideia);
+            }catch(Exception e) {
+                System.err.println("Erro no RMI: " + e);
+            }
         }
         
         private boolean buyshare() {

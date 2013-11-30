@@ -32,6 +32,16 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
 
         <action name="login" class="direstruts.action.loginAction" method="execute">
             <result name="success">/bysearch.jsp</result>
+            <result name="error">/index.jsp</result>
+        </action>
+        
+        <action name="openregister" class="direstruts.action.openregisterAction" method="execute">
+            <result>/register.jsp</result>
+        </action>
+        
+        <action name="register" class="direstruts.action.registerAction" method="execute">
+            <result name="success">/index.jsp</result>
+            <result name="error">/register.jsp</result>
         </action>
 
         <action name="userdetails" class="direstruts.action.userdetailsAction" method="execute">
@@ -46,14 +56,27 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
 
         <action name="halloffame" class="direstruts.action.halloffameAction" method="execute">
             <result name="success">halloffame.jsp</result>
+            <result name="error">/jsp/error.jsp</result>
         </action>
         
         <action name="portfolio" class="direstruts.action.portfolioAction" method="execute">
             <result name="success">portfolio.jsp</result>
+            <result name="error">/jsp/error.jsp</result>
         </action>
         
         <action name="changeprice" class="direstruts.action.changepriceAction" method="execute">
-            <result type="redirect">/portfolio.action</result>
+            <result type="redirect">/portfolio.action</result><result type="redirect" name="success">/portfolio.action</result>
+            <result name="error">/jsp/error.jsp</result>
+        </action>
+        
+        <action name="search" class="direstruts.action.searchAction" method="execute">
+            <result name="success">bysearch.jsp</result>
+            <result name="error">/jsp/error.jsp</result>
+        </action>
+        
+        <action name="deleteidea" class="direstruts.action.deleteideaAction" method="execute">
+            <result type="redirect" name="success">/portfolio.action</result>
+            <result name="error">/jsp/error.jsp</result>
         </action>
         
         <action name="bytopic" class="direstruts.action.bytopicAction" method="execute">
@@ -68,7 +91,22 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
         
         <action name="buyshare" class="direstruts.action.buyshareAction" method="execute">
             <result name="error">/jsp/error.jsp</result>
-            <result name="success">bytopic.jsp</result>
+            <result name="success">/jsp/previous.jsp</result>
+        </action>
+        
+        <action name="addwatchlist" class="direstruts.action.addwatchlistAction" method="execute">
+            <result name="error">/jsp/error.jsp</result>
+            <result name="success">/jsp/previous.jsp</result>
+        </action>
+        
+        <action name="removewatchlist" class="direstruts.action.removewatchlistAction" method="execute">
+            <result name="error">/jsp/error.jsp</result>
+            <result type="redirect" name="success">/seewatchlist.action</result>
+        </action>
+        
+        <action name="seewatchlist" class="direstruts.action.seewatchlistAction" method="execute">
+            <result name="error">/jsp/error.jsp</result>
+            <result name="success">/watchlist.jsp</result>
         </action>
 
         <action name="logout" class="direstruts.action.logoutAction" method="execute">
@@ -106,7 +144,6 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
             <result name="error">/jsp/error.jsp</result>
             <result name="success">/jsp/previous.jsp</result>
         </action>
-        
     </package>
 
 </struts>

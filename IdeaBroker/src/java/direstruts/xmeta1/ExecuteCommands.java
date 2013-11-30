@@ -24,4 +24,5 @@ public interface ExecuteCommands extends java.rmi.Remote {
     public boolean verifyExecutePendingTransaction(int ideiaID) throws java.rmi.RemoteException;
     public void buy_all(int ideiaID) throws java.rmi.RemoteException;
     public ArrayList retrieveHoF() throws java.rmi.RemoteException;
+    public Mensagem retrieveIdeiasSearch(int ideaID) throws java.rmi.RemoteException;
 }

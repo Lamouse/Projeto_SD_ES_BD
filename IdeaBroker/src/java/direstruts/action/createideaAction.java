@@ -44,7 +44,7 @@ public class createideaAction extends ActionSupport {
             }catch(Exception e) {
                 System.err.println("Erro no RMI: " + e);
             }
-            return true;
+            return cond;
         }
         
         public String getTopic() {

@@ -20,7 +20,6 @@ public class userdetailsAction extends ActionSupport implements SessionAware {
             UserBean user = (UserBean) session.get("userBean");
             if(user==null)
                 return "notfound";
-            System.err.println(user);
             setId_user(user.getId());  
             return SUCCESS;
         }

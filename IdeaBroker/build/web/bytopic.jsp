@@ -56,22 +56,27 @@
                             <br>
                             <label id="text"> ID Idea: </label> 
                             <c:out value="${value1.one}" />
+                            <br><br>
                             </div>
-                             <div class="right_ideia">
-                                <fieldset>
-                                    <legend>Buy Shares</legend>
-                                    <s:form action="buyshare" method="post">
-                                        <s:hidden name="iduser" value='%{#session.userBean.id}' />
-                                        <s:hidden name="idideia" value='%{#attr.value1.one}' />
-                                        <s:textfield name="nr" label="Nr Share"/>
-                                        <s:textfield name="price" label="Buy Price"/>
-                                        <s:textfield name="newprice" label="New Price"/>
-                                        <s:submit value='Buy Shares' align="center"/> 
-                                    </s:form>
-                                    <!--<s:property value="idideia" />-->
-                                </fieldset>
-                            </div>
-                            <div style="clear:both"/>
+                            <c:choose>
+                                <c:when test="${value1.three == 0}">
+                                    <div class="right_ideia">
+                                    <fieldset>
+                                        <legend>Buy Shares</legend>
+                                        <s:form action="buyshare" method="post">
+                                            <s:hidden name="iduser" value='%{#session.userBean.id}' />
+                                            <s:hidden name="idideia" value='%{#attr.value1.one}' />
+                                            <s:textfield name="nr" label="Nr Share"/>
+                                            <s:textfield name="price" label="Buy Price"/>
+                                            <s:textfield name="newprice" label="New Price"/>
+                                            <s:submit value='Buy Shares' align="center"/> 
+                                        </s:form>
+                                        <!--<s:property value="idideia" />-->
+                                    </fieldset>
+                                    </div>
+                                </c:when>
+                            </c:choose>
+                            <div style="clear:both"/> 
                             Message: <br />
                             <textArea readonly style="width:100%; height:150px; text-align: left"> <c:out value="${value1.two}" /></textarea>    
                             <br />

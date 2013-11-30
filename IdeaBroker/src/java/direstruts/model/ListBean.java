@@ -55,11 +55,12 @@ public class ListBean {
                     ExecuteCommands srmi = (ExecuteCommands)Naming.lookup("rmi://localhost:1099/ServerRMI");
                     Mensagem msg = srmi.retrieveIdeias(this.iduser);
                     list.clear();
-                    int i, length = msg.getListSize()/2;
+                    int i, length = msg.getListSize()/3;
                     for(i=0;i<length;i++) {
                         Map map = new HashMap();
                         map.put("one", msg.popList());
                         map.put("two", msg.popList());
+                        map.put("three", msg.popList());
                         list.add(map);
                     }
                 }catch(Exception e) {

@@ -32,25 +32,71 @@
         <fieldset >
             <legend>Search</legend>
             <br> 
-            <label for='Search' class="text1">Search:</label>
-            <select name="cb1" class="opcao" size="1" style="width:150px;">
-              <option selected value="Topic">Topic</option>
-              <option value="Ideia">Idea</option>
-            </select>   
-            <br />
-            <label for='Identificação'  class="text1">ID:</label>
-            <input type='text' name='id' id='id' style="width:150px;"/>
-             
-            <center>
-                <input type='submit' name='Search' value='Search'/>
-            </center>
+            <s:form action="search" cssStyle="margin-left:auto;margin-right:auto">
+                <s:select name="type" list="{'Topic','Idea'}" label="Search" cssStyle="width:150px;"/>
+                <s:textfield name="id" cssStyle="width:150px;" label="ID"/>
+                <s:submit value="Search" align="center"/>
+            </s:form>
         </fieldset>
             
     	<br />
         
         <fieldset >
-        <legend>Outcomes</legend>
-        
+            <legend>Outcomes</legend>
+            <c:choose>
+		<c:when test="${nome != null}">
+                    <h3> Topic: <c:out value="${nome}"/> </h3>
+		</c:when>
+            </c:choose>
+            
+            <br>
+            <c:forEach items="${lista}" var="value">
+                <br>
+                <div>
+                    <div class="left_ideia">
+                    <br>
+                    <label id="text"> ID Idea: </label> 
+                    <c:out value="${value.one}" />
+                    <br><br>
+                    </div>
+                    <c:choose>
+                        <c:when test="${value.three == 0}">
+                            <div class="right_ideia">
+                            <fieldset>
+                                <legend>Buy Shares</legend>
+                                <s:form action="buyshare" method="post">
+                                    <s:hidden name="iduser" value='%{#session.userBean.id}' />
+                                    <s:hidden name="idideia" value='%{#attr.value.one}' />
+                                    <c:choose>
+                                        <c:when test="${userBean.id != 0}">
+                                            <s:textfield name="nr" label="Nr Share"/>
+                                            <s:textfield name="price" label="Buy Price"/>
+                                            <s:textfield name="newprice" label="New Price"/>
+                                         </c:when>
+                                    </c:choose>
+                                    <s:submit value='Buy Shares' align="center"/> 
+                                </s:form>
+                                <!--<s:property value="idideia" />-->
+                            </fieldset>
+                            </div>
+                        </c:when>
+                    </c:choose>
+                    <div style="clear:both"/> 
+                    Message: <br />
+                    <textArea readonly style="width:100%; height:150px; text-align: left"> <c:out value="${value.two}" /></textarea>    
+                    <br />
+
+                    <center>
+                        <input type='submit' name='Attachments ' value='Attachments' style="width:100px"/>
+                        <input type='submit' name='Add Watchlist' value='Add Watchlist' style="width:100px"/>
+                    </center>
+
+
+                    <br /><br />
+                </div>
+
+                <hr>
+            </c:forEach>
         </fieldset>
         
     	<br><br><br>

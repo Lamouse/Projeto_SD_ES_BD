@@ -12,14 +12,11 @@
         <br /><br /><br /><br /><br /><br /> 
         
         <fieldset style="width:40%; margin-left: auto; margin-right: auto">
-            <legend>Login</legend>
-            <s:form action="login" method="post" cssStyle="margin-left:auto; margin-right:auto; width:100%">
-                <s:textfield name="userBean.user" label="Username*"/>
-                <s:password name="userBean.pass" label="Password*"/>
-                <s:submit value='Login' cssClass="buttonlogin" align="center"/> 
-            </s:form>
-            <s:form action="openregister" cssStyle="margin-left:auto; margin-right:auto">
-                <s:submit value='Register' cssClass="buttonlogin"/> 
+            <legend>Register</legend>
+            <s:form action="register" method="post" cssStyle="margin-left:auto; margin-right:auto; width:100%">
+                <s:textfield name="user" label="Username*"/>
+                <s:password name="pass" label="Password*"/>
+                <s:submit value='Register' cssClass="buttonlogin" align="center"/> 
             </s:form>
         </fieldset>
     </body>

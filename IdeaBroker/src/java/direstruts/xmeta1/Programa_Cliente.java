@@ -2231,9 +2231,10 @@ public class Programa_Cliente extends javax.swing.JFrame {
                     atualiza_jpanel(jPanel_topic, list_aux);
                 }
                 else if(tipo == 5){
-                    int i, length = msg.getListSize()/2;
+                    int i, length = msg.getListSize()/3;
                     for(i=0;i<length;i++) {
                         list_aux.add(add_idea_visual(tryParse(msg.popList()),msg.popList(),/*msg.popList()*/""));
+                        msg.popList();
                     }
                     atualiza_jpanel(jPanel_topic_idea, list_aux);
                 }
@@ -2312,9 +2313,10 @@ public class Programa_Cliente extends javax.swing.JFrame {
                 else if(tipo == 13){
                     if(msg.getListSize() > 0){
                         jLabel_search_name.setText(msg.popList());
-                        int i, length = msg.getListSize()/2;
+                        int i, length = msg.getListSize()/3;
                         for(i=0;i<length;i++) {
                             list_aux.add(add_idea_visual(tryParse(msg.popList()),msg.popList(),/*msg.popList()*/""));
+                            msg.popList();
                         }
                         atualiza_jpanel(jPanel_search, list_aux);
                     }

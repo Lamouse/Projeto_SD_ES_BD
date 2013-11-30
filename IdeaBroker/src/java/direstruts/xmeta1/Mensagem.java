@@ -36,6 +36,7 @@ public class Mensagem implements Serializable {
 	 * 17   fazer pedidos
 	 * 18   compra de shares pelo root
 	 * 19   retornar HoF
+	 * 20	pesquisar ideias
 	 ...
 	 */
 	

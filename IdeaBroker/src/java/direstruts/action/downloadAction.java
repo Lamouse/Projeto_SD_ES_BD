@@ -7,7 +7,7 @@ public class downloadAction extends ActionSupport {
 
     @Override
     public String execute() throws Exception {
-        download();
+        downloadfile();
         return SUCCESS;
     }
 
@@ -19,7 +19,7 @@ public class downloadAction extends ActionSupport {
     	ididea = aux;
     }
     
-    private void download() {
+    private void downloadfile() {
         //do something
     }
 }
