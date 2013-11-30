@@ -1,9 +1,12 @@
+package direstruts.xmeta1;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.rmi.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,7 +14,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.naming.NamingException;
 
@@ -67,6 +73,10 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     public static void main(String args[]) throws NamingException, RemoteException {
+        /*System.out.println(System.getProperties().getProperty("user.dir"));
+        System.getProperties().put("java.security.policy", "security.policy");
+        System.setSecurityManager(new RMISecurityManager());*/
+
         try {
             Servidor_RMI RMIServer = new Servidor_RMI();
             LocateRegistry.createRegistry(PORT_RMI).rebind("ServerRMI", RMIServer);
@@ -427,6 +437,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     public int hasUSer(String username, String password) throws RemoteException {
         String test = "SELECT * FROM UTILIZADOR WHERE USERNAME = '" + username + "' and PASSWORD = '" + password + "'";
+        System.out.println(test);
         int aux = -1;
         try {
             Statement statement = DBConn.createStatement();
@@ -700,15 +711,13 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             Statement statement = DBConn.createStatement();
             statement.executeUpdate(updatePrice);
             statement.close();
+            DBConn.commit();
+            verifyExecutePendingTransaction(ideiaID);
         } catch (SQLException e) {
             System.err.println("Connectifon Failed Changing Price To Share! Check output console " + e);
             RollBack();
-        }
-        try {
-            DBConn.commit();
-        } catch (SQLException e) {
-            System.err.println("Connection Failed Commiting! Check output console " + e);
-            RollBack();
+        } catch (RemoteException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -884,7 +893,34 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         else
             return false;
     }
-
+    
+    public boolean addWatchlist(int ideiaID, int idUser) {
+        String addWatchlist = "INSERT INTO WATCHLIST VALUES(" + ideiaID + ", " + idUser + ")";
+        try {
+            Statement statement = DBConn.createStatement();
+            statement.executeUpdate(addWatchlist);
+            statement.close();
+        } catch (SQLException e) {
+            System.err.println("Connection Failed Adding to Watchlist! Check output console " + e);
+            return false;
+        }
+        return true;
+    }
+    
+    public boolean removeWatchlist(int ideiaID, int idUser) {
+        String addWatchlist = "DELETE FROM WATCHLIST "
+                + "WHERE IDIDEIA = " + ideiaID + " AND IDUSER = " + idUser;
+        try {
+            Statement statement = DBConn.createStatement();
+            statement.executeUpdate(addWatchlist);
+            statement.close();
+        } catch (SQLException e) {
+            System.err.println("Connection Failed Removing from Watchlist! Check output console " + e);
+            return false;
+        }
+        return true;
+    }
+    
     private boolean retirar_dinheiro(int person, int investimento){
         String moneyUserCompra = "SELECT DINHEIRO  FROM UTILIZADOR "
                 + "WHERE IDUSER = " + person;
@@ -1004,6 +1040,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                         statement.executeUpdate(addPendingTransaction);
                         DBConn.commit();
                         statement.close();
+                        verifyExecutePendingTransaction(ideiaID);
                         return true;
                     } catch(SQLException e) {
                         System.err.println("Connection Failed adding Pending Transaction! Check output console " + e);
@@ -1028,6 +1065,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                     addTransactionDescription(userID, "Utilizador " + userID + " mandou pedido de compra de " +nr_shares + " shares da ideia " +
                             ideiaID + " pelo preço de " + maxPrice, dataString);
                     statement.close();
+                    verifyExecutePendingTransaction(ideiaID);
                     return true;
                 } catch(SQLException e) {
                     System.err.println("Connection Failed updating Pending Transaction! Check output console " + e);
@@ -1589,5 +1627,48 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             System.err.println("Connection Failed Buying shares. Check output console " + e);
             RollBack();
         }
+    }
+
+    public ArrayList retrieveHoF() throws RemoteException {
+        ArrayList aux = new ArrayList();
+        String selHof = "SELECT * FROM HALL_OF_FAME";
+        int id_ideia;
+        double inves;
+        String temp;
+        try {
+            Statement statement = DBConn.createStatement();
+            ResultSet rs = statement.executeQuery(selHof);
+            while(rs.next()) {
+                Map map = new HashMap();
+                id_ideia = rs.getInt(1);
+                inves = rs.getDouble(2);
+                map.put("one",Integer.toString(id_ideia));
+                map.put("two",Double.toString(inves));
+                inves /= 100000;
+                String get_money = "SELECT * FROM IDEIA WHERE IDIDEIA = " + id_ideia;
+                Statement statement2 = DBConn.createStatement();
+                ResultSet rs1 = statement2.executeQuery(get_money);
+                rs1.next();
+                map.put("three",rs1.getString(2));
+                map.put("four",inves);
+                map.put("five",rs1.getDouble(4));
+
+                //System.out.println("->" + rs1.getString(7));
+                //map.put("six",rs1.getString(7));
+                aux.add(map);
+                rs1.close();
+                statement2.close();
+            }
+            rs.close();
+            statement.close();
+            try{
+                DBConn.commit();
+            } catch (SQLException e) {
+                System.err.println("Connection Failed commiting. Check output console" + e);}
+        }catch (SQLException e) {
+            System.err.println("Connection Failed Buying shares. Check output console " + e);
+            RollBack();
+        }
+        return aux;
     }
 }
