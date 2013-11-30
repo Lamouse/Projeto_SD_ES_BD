@@ -900,8 +900,10 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             Statement statement = DBConn.createStatement();
             statement.executeUpdate(addWatchlist);
             statement.close();
+            DBConn.commit();
         } catch (SQLException e) {
             System.err.println("Connection Failed Adding to Watchlist! Check output console " + e);
+            RollBack();
             return false;
         }
         return true;
@@ -914,8 +916,10 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             Statement statement = DBConn.createStatement();
             statement.executeUpdate(addWatchlist);
             statement.close();
+            DBConn.commit();
         } catch (SQLException e) {
             System.err.println("Connection Failed Removing from Watchlist! Check output console " + e);
+            RollBack();
             return false;
         }
         return true;
