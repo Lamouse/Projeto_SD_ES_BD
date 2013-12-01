@@ -87,8 +87,8 @@
                     <br />
 
                     <center>
-                        <s:form>
-                            <s:hidden name="idideia" value='%{#attr.value.one}' />
+                        <s:form action="download">
+                            <s:hidden name="ididea" value='%{#attr.value.one}' />
                             <s:submit value="Attachments" align="center" cssStyle="width:100px"/>
                         </s:form>
                         <c:choose>
