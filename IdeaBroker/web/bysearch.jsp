@@ -19,7 +19,7 @@
                 <a href="bysearch.jsp">By search</a>
                 <s:a href="bytopic">By topic</s:a>
                 <s:a href="portfolio">Portfolio</s:a>
-                <a href="watchlist.jsp">Watchlist</a>
+                <s:a href="watchlist">Watchlist</s:a>
                 <s:a href="halloffame">Hall of Fame</s:a>
                 <a href="creativezone.jsp">Creative Zone</a>
                 <s:a href="userdetails">User details</s:a>
@@ -87,8 +87,19 @@
                     <br />
 
                     <center>
-                        <input type='submit' name='Attachments ' value='Attachments' style="width:100px"/>
-                        <input type='submit' name='Add Watchlist' value='Add Watchlist' style="width:100px"/>
+                        <s:form>
+                            <s:hidden name="idideia" value='%{#attr.value.one}' />
+                            <s:submit value="Attachments" align="center" cssStyle="width:100px"/>
+                        </s:form>
+                        <c:choose>
+	                        <c:when test="${value.three == 0}">
+		                        <s:form action="addwatchlist" method="post">
+		                            <s:hidden name="id_user" value='%{#session.userBean.id}' />
+		                            <s:hidden name="id_ideia" value='%{#attr.value.one}' />
+		                            <s:submit value="Add Watchlist" align="center" cssStyle="width:100px"/>
+		                        </s:form>
+		                    </c:when>
+		                </c:choose>
                     </center>
 
 

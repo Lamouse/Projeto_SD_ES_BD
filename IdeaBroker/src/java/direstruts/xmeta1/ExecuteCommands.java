@@ -25,4 +25,7 @@ public interface ExecuteCommands extends java.rmi.Remote {
     public void buy_all(int ideiaID) throws java.rmi.RemoteException;
     public ArrayList retrieveHoF() throws java.rmi.RemoteException;
     public Mensagem retrieveIdeiasSearch(int ideaID) throws java.rmi.RemoteException;
+    public boolean addWatchlist(int ideiaID, int idUser) throws java.rmi.RemoteException;
+    public boolean removeWatchlist(int ideiaID, int idUser) throws java.rmi.RemoteException;
+    public ArrayList seeWatchlist(int idUser) throws java.rmi.RemoteException;
 }

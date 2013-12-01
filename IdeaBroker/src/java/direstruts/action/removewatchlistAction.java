@@ -4,22 +4,22 @@ import com.opensymphony.xwork2.ActionSupport;
 import direstruts.xmeta1.ExecuteCommands;
 import java.rmi.Naming;
 
-public class addwatchlistAction extends ActionSupport {
+public class removewatchlistAction extends ActionSupport {
     private int id_user;
     private int id_ideia;
 
     @Override
 	public String execute() throws Exception {
-        if(addwatchlist())
+        if(removewatchlist())
             return SUCCESS;
         return ERROR;
     }
 
-    private boolean addwatchlist(){
+    private boolean removewatchlist(){
         boolean cond = false;
         try{
             ExecuteCommands srmi = (ExecuteCommands)Naming.lookup("rmi://localhost:1099/ServerRMI");
-            if(srmi.addWatchlist(id_ideia,id_user))
+            if(srmi.removeWatchlist(id_ideia,id_user))
                 cond = true;
         }catch(Exception e) {
             System.err.println("Erro no RMI: " + e);

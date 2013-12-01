@@ -101,10 +101,10 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
         
         <action name="removewatchlist" class="direstruts.action.removewatchlistAction" method="execute">
             <result name="error">/jsp/error.jsp</result>
-            <result type="redirect" name="success">/seewatchlist.action</result>
+            <result type="redirect" name="success">/watchlist.action</result>
         </action>
         
-        <action name="seewatchlist" class="direstruts.action.seewatchlistAction" method="execute">
+        <action name="watchlist" class="direstruts.action.seewatchlistAction" method="execute">
             <result name="error">/jsp/error.jsp</result>
             <result name="success">/watchlist.jsp</result>
         </action>

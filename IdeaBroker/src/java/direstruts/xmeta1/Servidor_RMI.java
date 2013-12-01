@@ -1686,4 +1686,61 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         }
         return aux;
     }
+
+    public boolean addWatchlist(int ideiaID, int idUser) throws RemoteException {
+        if(verifyExistingIdea(ideiaID)){
+            String addWatchlist = "INSERT INTO WATCHLIST VALUES(" + ideiaID + ", " + idUser + ")";
+            try {
+                Statement statement = DBConn.createStatement();
+                statement.executeUpdate(addWatchlist);
+                statement.close();
+                DBConn.commit();
+            } catch (SQLException e) {
+                System.err.println("Connection Failed Adding to Watchlist! Check output console " + e);
+                RollBack();
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean removeWatchlist(int ideiaID, int idUser) throws RemoteException {
+        String addWatchlist = "DELETE FROM WATCHLIST "
+                + "WHERE IDIDEIA = " + ideiaID + " AND IDUSER = " + idUser;
+        try {
+            Statement statement = DBConn.createStatement();
+            statement.executeUpdate(addWatchlist);
+            statement.close();
+            DBConn.commit();
+        } catch (SQLException e) {
+            System.err.println("Connection Failed Removing from Watchlist! Check output console " + e);
+            RollBack();
+            return false;
+        }
+        return true;
+    }
+
+    public ArrayList seeWatchlist(int idUser) throws RemoteException {
+        String ideias = "SELECT I.IDIDEIA, I.MENSAGEM, I.IS_FAME FROM IDEIA I, WATCHLIST W " +
+                "WHERE W.IDIDEIA = I.IDIDEIA AND W.IDUSER = " + idUser;
+        ArrayList aux = new ArrayList();
+        Map map;
+        try {
+            Statement statement = DBConn.createStatement();
+            ResultSet rs = statement.executeQuery(ideias);
+            while(rs.next()) {
+                map = new HashMap();
+                map.put("one",rs.getString(1));
+                map.put("two",rs.getString(2));
+                map.put("three",rs.getString(3));
+                aux.add(map);
+            }
+            rs.close();
+            statement.close();
+        } catch (SQLException e) {
+            System.err.println("Connection Failed Removing from Watchlist! Check output console " + e);
+        }
+        return aux;
+    }
 }

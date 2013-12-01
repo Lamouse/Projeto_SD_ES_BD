@@ -19,7 +19,7 @@
                 <a href="bysearch.jsp">By search</a>
                 <s:a href="bytopic">By topic</s:a>
                 <s:a href="portfolio">Portfolio</s:a>
-                <a href="watchlist.jsp">Watchlist</a>
+                <s:a href="watchlist">Watchlist</s:a>
                 <s:a href="halloffame">Hall of Fame</s:a>
                 <a href="creativezone.jsp">Creative Zone</a>
                 <s:a href="userdetails">User details</s:a>
@@ -31,90 +31,61 @@
         
         <fieldset >
             <legend>Watchlist</legend>
+            <c:forEach items="${lista}" var="value">
+                <br>
+                <div>
+                    <div class="left_ideia">
+                    <br>
+                    <label id="text"> ID Idea: </label> 
+                    <c:out value="${value.one}" />
+                    <br><br>
+                    </div>
+                    <c:choose>
+                        <c:when test="${value.three == 0}">
+                            <div class="right_ideia">
+                            <fieldset>
+                                <legend>Buy Shares</legend>
+                                <s:form action="buyshare" method="post">
+                                    <s:hidden name="iduser" value='%{#session.userBean.id}' />
+                                    <s:hidden name="idideia" value='%{#attr.value.one}' />
+                                    <c:choose>
+                                        <c:when test="${userBean.id != 0}">
+                                            <s:textfield name="nr" label="Nr Share"/>
+                                            <s:textfield name="price" label="Buy Price"/>
+                                            <s:textfield name="newprice" label="New Price"/>
+                                         </c:when>
+                                    </c:choose>
+                                    <s:submit value='Buy Shares' align="center"/> 
+                                </s:form>
+                                <!--<s:property value="idideia" />-->
+                            </fieldset>
+                            </div>
+                        </c:when>
+                    </c:choose>
+                    <div style="clear:both"/> 
+                    Message: <br />
+                    <textArea readonly style="width:100%; height:150px; text-align: left"> <c:out value="${value.two}" /></textarea>    
+                    <br />
+
+                    <center>
+                        <s:form>
+                            <s:hidden name="idideia" value='%{#attr.value.one}' />
+                            <s:submit value="Attachments" align="center" cssStyle="width:100px"/>
+                        </s:form>
+                        <s:form action="removewatchlist" method="post">
+                            <s:hidden name="id_user" value='%{#session.userBean.id}' />
+                            <s:hidden name="id_ideia" value='%{#attr.value.one}' />
+                            <s:submit value="Remove" align="center" cssStyle="width:100px"/>
+                        </s:form>
+                    </center>
+
+
+                    <br /><br />
+                </div>
+
+                <hr>
+            </c:forEach>
             
-            <div>
-            	<div class="right_ideia">
-                    <fieldset>
-                    <legend>Buy Shares</legend>
-                    <div class="left_ideia">
-                        <input type='submit' name='Buy Shares' value='Buy Shares' style="width:100px"/>
-                    </div>
-                    <div class="right_ideia">
-                        <label id="text_ideia"> Nº Shares </label>
-                        <input type='text' name='username' id='textfield_ideia' />
-                        <br />
-                        <label id="text_ideia"> Price </label>
-                        <input type='text' name='username' id='textfield_ideia' />
-                    </div>
-                    </fieldset>
-                </div>
-                <div>
-                	<br>
-                    <label id="text"> ID Idea </label> XXX <br />
-                    <label id="text"> Price </label> XXX <br>
-                </div>
-                
-                <div style="clear:both"/>
-                <br>Message: <br /><br />
-                <div class="msg1">
-                    dsagfgfadfadsfsdfasdcscaxcaSCVDAVZCADSVABDFVDDASFVDSSCASDVASXADSCAscASDCSDACADSDCSADCASDCSADCSDACASDCDSACSDACDSAVFSADVSADFVD
-                    sdfsadf<br />
-                    sadf<br />
-                    saf<br />
-                    sd<br />
-                    f<br />
-                    sadf<br />
-                    a<br />
-                </div>
-                <br />
-    
-                <center>
-                    <input type='submit' name='Attachments ' value='Attachments' style="width:100px"/>
-                </center>
-                <br><br>
-        	</div>
-			<hr>
-            <div>
-            	<div class="right_ideia">
-                    <fieldset>
-                    <legend>Buy Shares</legend>
-                    <div class="left_ideia">
-                        <input type='submit' name='Buy Shares' value='Buy Shares' style="width:100px"/>
-                    </div>
-                    <div class="right_ideia">
-                        <label id="text_ideia"> Nº Shares </label>
-                        <input type='text' name='username' id='textfield_ideia' />
-                        <br />
-                        <label id="text_ideia"> Price </label>
-                        <input type='text' name='username' id='textfield_ideia' />
-                    </div>
-                    </fieldset>
-                </div>
-                <div>
-                	<br>
-                    <label id="text"> ID Idea </label> XXX <br />
-                    <label id="text"> Price </label> XXX <br>
-                </div>
-                
-                <div style="clear:both"/>
-                <br>Message: <br /><br />
-                <div class="msg1">
-                    dsagfgfadfadsfsdfasdcscaxcaSCVDAVZCADSVABDFVDDASFVDSSCASDVASXADSCAscASDCSDACADSDCSADCASDCSADCSDACASDCDSACSDACDSAVFSADVSADFVD
-                    sdfsadf<br />
-                    sadf<br />
-                    saf<br />
-                    sd<br />
-                    f<br />
-                    sadf<br />
-                    a<br />
-                </div>
-                <br />
-    
-                <center>
-                    <input type='submit' name='Attachments ' value='Attachments' style="width:100px"/>
-                </center>
-                <br><br>
-        	</div>
         </fieldset>
         <br><br><br>
         <div id="out">

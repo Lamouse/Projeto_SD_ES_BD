@@ -24,7 +24,7 @@
                 <a href="bysearch.jsp">By search</a>
                 <s:a href="bytopic">By topic</s:a>
                 <s:a href="portfolio">Portfolio</s:a>
-                <a href="watchlist.jsp">Watchlist</a>
+                <s:a href="watchlist">Watchlist</s:a>
                 <s:a href="halloffame">Hall of Fame</s:a>
                 <a href="creativezone.jsp">Creative Zone</a>
                 <s:a href="userdetails">User details</s:a>
