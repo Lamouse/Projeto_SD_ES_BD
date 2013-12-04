@@ -19,7 +19,7 @@ public class buyshareAction extends ActionSupport {
         
 	@Override
 	public String execute() throws Exception {
-            System.out.println("NR:" + nr + " NP:" + newprice + " P:" + price + " IDI:" + idideia + " IDU:" + iduser);
+            //System.out.println("NR:" + nr + " NP:" + newprice + " P:" + price + " IDI:" + idideia + " IDU:" + iduser);
             if(iduser != 0){
                 if(buyshare())
                     return SUCCESS;

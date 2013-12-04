@@ -82,15 +82,15 @@
                             <br />
 
                             <center>
-                                <s:form>
-                                    <s:hidden name="idideia" value='%{#attr.value1.one}' />
-                                    <s:submit value="Attachments" align="center" cssStyle="width:100px"/>
-                                </s:form>
+                                <s:form action="download">
+		                            <s:hidden name="ididea" value='%{#attr.value1.one}' />
+		                            <s:submit value="Attachments" align="center" cssStyle="width:100px"/>
+		                        </s:form>
                                 <c:choose>
 		                        <c:when test="${value1.three == 0}">
 			                        <s:form action="addwatchlist" method="post">
 			                            <s:hidden name="id_user" value='%{#session.userBean.id}' />
-			                            <s:hidden name="id_ideia" value='%{#attr.value.one}' />
+			                            <s:hidden name="id_ideia" value='%{#attr.value1.one}' />
 			                            <s:submit value="Add Watchlist" align="center" cssStyle="width:100px"/>
 			                        </s:form>
 			                    </c:when>

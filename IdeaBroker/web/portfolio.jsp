@@ -64,7 +64,10 @@
                     <br />
 
                     <center>
-                        <input type='submit' name='Attachments ' value='Attachments' style="width:100px"/>
+                        <s:form action="download">
+                            <s:hidden name="ididea" value='%{#attr.value.one}' />
+                            <s:submit value="Attachments" align="center" cssStyle="width:100px"/>
+                        </s:form>
                         <s:form action="deleteidea">
                             <s:hidden name="ididea" value='%{#attr.value.one}' />
                             <s:hidden name="iduser" value='%{#session.userBean.id}' />

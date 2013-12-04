@@ -1,5 +1,9 @@
 package direstruts.xmeta1;
 
+import com.restfb.DefaultFacebookClient;
+import com.restfb.FacebookClient;
+import com.restfb.Parameter;
+import com.restfb.types.FacebookType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,6 +13,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.rmi.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -427,6 +432,45 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         return id;
     }
 
+    private boolean hasFace(int fbid) {
+        boolean cond = false;
+        String aux = "SELECT IDUSER FROM USER_FACEBOOK WHERE IDFACEBOOK = " + fbid;
+        try {
+            Statement statement = DBConn.createStatement();
+            ResultSet rs = statement.executeQuery(aux);
+            if(rs.next()){
+                cond = true;
+            }
+            rs.close();
+            statement.close();
+        }catch (SQLException e) {
+            System.err.println("Connection Failed incrementing CTOPICO. Check output console" + e);
+        }
+        return cond;
+    }
+
+    public boolean addPessoa(String username, String password,int fbid, String token) throws RemoteException {
+        if(!hasPessoa(username)){
+            if(!hasFace(fbid)){
+                addNewPessoa(username,password,fbid,token);
+                System.out.println("Adicionado User com o nome " + username + ".");
+                try{
+                    DBConn.commit();
+                    return true;
+                } catch (SQLException e) {
+                    System.err.println("Connection Failed commiting addPessoa. Check output console" + e);}
+            }
+            else{
+                return false;
+            }
+        }
+        else{
+            System.out.println("Já existe um User com o nome " + username + ".");
+            return false;
+        }
+        return true;
+    }
+    
     public boolean addPessoa(String username, String password) throws RemoteException {
         if(!hasPessoa(username)){
             addNewPessoa(username,password);
@@ -450,6 +494,23 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         try {
             Statement statement = DBConn.createStatement();
             statement.executeUpdate(insertUser);
+            statement.close();
+            return true;
+        }catch (SQLException e) {
+            System.err.println("Connection Failed creating Person! Check output console " + e );
+            RollBack();
+        }
+        return false;
+    }
+    
+    public boolean addNewPessoa(String username, String password, int faceid, String token) {
+        int userID = incrementUserID();
+        String insertUser = "INSERT INTO UTILIZADOR VALUES (" + userID + ",'" + username + "','" + password+ "'," + 1000000 +")";
+        String insertUserFace = "INSERT INTO USER_FACEBOOK VALUES("+userID+","+faceid+",'"+token+"')";
+        try {
+            Statement statement = DBConn.createStatement();
+            statement.executeUpdate(insertUser);
+            statement.executeUpdate(insertUserFace);
             statement.close();
             return true;
         }catch (SQLException e) {
@@ -813,22 +874,21 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 file.saveToFile(newName);
             }
 
+            String aux_str = postfacebook(person,ideiaText,investimento);
+            
             partes = topicos.split(",");
             String insertIdeia = "INSERT INTO IDEIA VALUES"
                     + "(" + ideiaID + ",'" + ideiaText + "'," +
-                    startShares + "," + value + "," + 1 + "," + 0 + "," + value + ",'" + newName +"')";
-
-                    /*+ "(" + ideiaID + ",'" + ideiaText + "','" +
-                    type + "'," + startShares + ",'" + newName + "')";*/
+                    startShares + "," + value + "," + 1 + "," + 0 + "," + value + "," + person + ",'" + aux_str + "','" + newName +"')";
             String insertUser_Share = "INSERT INTO USER_SHARE VALUES"
                     + "(" + attributeID + "," + ideiaID + "," + person +
                     "," + value + "," + startShares + ")";
-
-            //String insertIdeia_Ideia = "";
             try{
                 Statement statement = DBConn.createStatement();
                 try {
+                    //System.out.println(insertIdeia);
                     statement.executeUpdate(insertIdeia);
+                    //System.out.println(insertUser_Share);
                     statement.executeUpdate(insertUser_Share);
                 }catch (SQLException e) {
                     System.err.println("Connection Failed creating idea! Check output console " + e);
@@ -919,6 +979,25 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         else
             return false;
     }
+    
+    private String postfacebook(int id_user,String mensagem, int inv) {
+        String aux = "";
+        String gettoken = "SELECT TOKEN FROM USER_FACEBOOK WHERE IDUSER = " + id_user;
+        try {
+            Statement statement = DBConn.createStatement();
+            ResultSet rs = statement.executeQuery(gettoken);
+            if(rs.next()){
+                String token = rs.getString(1);
+                String msg = "O utilizador com o id igual a "+id_user+" criou a seguinte ideia:\n\n"+mensagem+"\n\nEle investiu na idea "+inv+" Deicoins.";
+                FacebookClient facebookClient = new DefaultFacebookClient(token);
+                FacebookType publishMessageResponse = facebookClient.publish("me/feed", FacebookType.class, Parameter.with("message", msg));
+                aux = publishMessageResponse.getId();
+            }
+        } catch (SQLException e) {
+            System.err.println("Connection Failed Facebook Server! Check output console " + e);
+        }
+        return aux;
+    }
 
     private boolean retirar_dinheiro(int person, int investimento){
         String moneyUserCompra = "SELECT DINHEIRO  FROM UTILIZADOR "
@@ -963,9 +1042,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 + "WHERE IDIDEIA = " + ideiaID;
         try{
             Statement statement = DBConn.createStatement();
-            /*statement.executeUpdate(removeTopico_Ideia);
-            statement.executeUpdate(removeIdeia_Ideia);
-            statement.executeUpdate(removeAttribute);*/
+            deletefacebook(ideiaID);
             statement.executeUpdate(removeIdeia);
             statement.close();
         } catch (SQLException e) {
@@ -981,6 +1058,36 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             return false;
         }
         return true;
+    }
+    
+    private void deletefacebook(int idIdeia) {
+        String aux = "SELECT CREATOR, ID_FACEBOOK FROM IDEIA WHERE IDIDEIA = " + idIdeia;
+        System.out.println("OLA");
+        try{
+            Statement statement = DBConn.createStatement();
+            ResultSet rs = statement.executeQuery(aux);
+            if(rs.next()){
+                int id_user = rs.getInt(1);
+                String aux_str = rs.getString(2);
+                
+                String aux1 = "SELECT TOKEN FROM USER_FACEBOOK WHERE IDUSER = " + id_user;
+                Statement statement1 = DBConn.createStatement();
+                ResultSet rs1 = statement1.executeQuery(aux1);
+                rs1.next();
+                String access_token = rs1.getString(1);
+                
+                FacebookClient facebookClient = new DefaultFacebookClient(access_token);
+                facebookClient.deleteObject(aux_str);
+                
+                rs1.close();
+                statement1.close();
+                System.out.println("ADEUS");
+            }
+            rs.close();
+            statement.close();
+        }catch (SQLException e) {
+            System.err.println("Connection Failed Facebook Server! Check output console " + e);
+        }        
     }
 
     private boolean veriffyUser_ShareTotality(int pessoaID, int ideiaID) {
@@ -1226,6 +1333,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 DBConn.commit();
                 insereUserDataOffline(idVende,idCompra);
                 insereUserDataOffline(idCompra,idCompra);
+                commentfacebook(idVende,idCompra,idIdeia,sharesToBuy,precoCompra,dataString);
                 return true;
             } catch (SQLException e) {System.err.println("Connection Failed Commiting! Check output console " + e);
                 RollBack();
@@ -1238,6 +1346,36 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         }
     }
 
+    private void commentfacebook(int idVende, int idCompra, int idIdeia, int sharesToBuy, double precoCompra, String dataString){
+        String aux = "SELECT CREATOR, ID_FACEBOOK FROM IDEIA WHERE IDIDEIA = " + idIdeia;
+        try{
+            Statement statement = DBConn.createStatement();
+            ResultSet rs = statement.executeQuery(aux);
+            if(rs.next()){
+                int id_user = rs.getInt(1);
+                String aux_str = rs.getString(2);
+                
+                String aux1 = "SELECT TOKEN FROM USER_FACEBOOK WHERE IDUSER = " + id_user;
+                Statement statement1 = DBConn.createStatement();
+                ResultSet rs1 = statement1.executeQuery(aux1);
+                rs1.next();
+                String access_token = rs1.getString(1);
+                String msg = "Na data de "+dataString+" o utilizador com o id igual a "+idCompra+" comprou "+sharesToBuy+" shares da ideia com o id igual a "+idIdeia+" ao preço de "+precoCompra+" Deicoins por share ao utilizador com o id igual a "+idVende;
+                DefaultFacebookClient client = new DefaultFacebookClient(access_token);
+                client.publish(aux_str+"/comments", String.class, Parameter.with("message", msg));
+                
+                
+                rs1.close();
+                statement1.close();
+            }
+            rs.close();
+            statement.close();
+        }catch (SQLException e) {
+            System.err.println("Connection Failed Facebook Server! Check output console " + e);
+        }        
+        
+    }
+    
     // Verifica se a Compra é Possivel de se realizar
     private boolean verifyTransaction(int idVende, int idCompra, int ideiaTransaction, int sharesToBuy, double precoCompra, String dataString) {
         if(alreadyTransaction(idVende, idCompra, dataString)) {
@@ -1743,4 +1881,71 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         }
         return aux;
     }
+    
+    public ArrayList getDataUser(int fbid, String token) throws RemoteException {
+        ArrayList aux = new ArrayList();
+        String search_user = "SELECT IDUSER FROM USER_FACEBOOK WHERE IDFACEBOOK = " + fbid;
+        int id_user;
+        try {
+            Statement statement = DBConn.createStatement();
+            ResultSet rs = statement.executeQuery(search_user);
+            if(rs.next()) {
+                id_user = rs.getInt(1);
+                String update = "UPDATE USER_FACEBOOK SET TOKEN = " + token + " WHERE IDFACEBOOK = " + fbid;
+                Statement statement2 = DBConn.createStatement();
+                statement2.executeUpdate(update);
+                update = "SELECT USERNAME FROM UTILIZADOR WHERE IDUSER = " + id_user;
+                ResultSet rs1 = statement2.executeQuery(update);
+                rs1.next();
+                aux.add(id_user);
+                aux.add(rs1.getString(1));
+                DBConn.commit();
+                rs1.close();
+                statement2.close();
+            }
+            rs.close();
+            statement.close();
+        } catch (SQLException e) {
+            RollBack();
+            System.err.println("Connection Failed Removing from Watchlist! Check output console " + e);
+        }
+        
+        
+        return aux;
+    }
+    
+    public ArrayList<String> getDataUser1(int fbid, String token) throws RemoteException {
+        ArrayList<String> aux = new ArrayList();
+        String search_user = "SELECT IDUSER FROM USER_FACEBOOK WHERE IDFACEBOOK = " + fbid;
+        int id_user;
+        try {
+            Statement statement = DBConn.createStatement();
+            ResultSet rs = statement.executeQuery(search_user);
+            if(rs.next()) {
+                id_user = rs.getInt(1);
+                String update = "UPDATE USER_FACEBOOK SET TOKEN = ? WHERE IDFACEBOOK = " + fbid;
+                PreparedStatement s2 = DBConn.prepareStatement(update);
+                s2.setString(1, token);
+                s2.executeUpdate();
+                update = "SELECT USERNAME FROM UTILIZADOR WHERE IDUSER = " + id_user;
+                //System.out.println(update);
+                Statement statement2 = DBConn.createStatement();
+                ResultSet rs1 = statement2.executeQuery(update);
+                rs1.next();
+                aux.add(Integer.toString(id_user));
+                aux.add(rs1.getString(1));
+                DBConn.commit();
+                s2.close();
+                rs1.close();
+                statement2.close();
+            }
+            rs.close();
+            statement.close();
+        } catch (SQLException e) {
+            RollBack();
+            System.err.println("Connection Failed Check User! Check output console " + e);
+        }
+        return aux;
+    }
 }
+

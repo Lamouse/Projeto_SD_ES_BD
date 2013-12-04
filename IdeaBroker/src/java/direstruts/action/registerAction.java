@@ -9,9 +9,11 @@ import java.security.NoSuchAlgorithmException;
 public class registerAction extends ActionSupport {
     private String user;
     private String pass;
+    private String token;
+    private int fbid;
 
     @Override
-    public String execute() throws Exception {       
+    public String execute() throws Exception {  
         if(addPeople())
             return SUCCESS;
         return ERROR;
@@ -21,8 +23,14 @@ public class registerAction extends ActionSupport {
         boolean cond = false;
         try{
             ExecuteCommands srmi = (ExecuteCommands)Naming.lookup("rmi://localhost:1099/ServerRMI");
-            if(srmi.addPessoa(user,pass))
-                cond = true;
+            if(fbid==0){
+                if(srmi.addPessoa(user,pass))
+                    cond = true;
+            }
+            else{
+                if(srmi.addPessoa(user,pass,fbid,token))
+                    cond = true;
+            }
         }catch(Exception e) {
             System.err.println("Erro no RMI: " + e);
         }
@@ -64,5 +72,21 @@ public class registerAction extends ActionSupport {
         } catch (NoSuchAlgorithmException e) {
             return null;
         }
+    }
+    
+    public String getToken() {
+    	return token;
+    }
+
+    public void setToken(String aux) {
+    	token = aux;
+    }
+           
+    public int getFbid() {
+    	return fbid;
+    }
+
+    public void setFbid(int aux) {
+    	fbid = aux;
     }
 }
