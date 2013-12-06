@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class UserBean {
+        private String notif = "Não existem notificações";
 	private String user;
 	private String pass;
         private int id = -1;
@@ -18,6 +19,14 @@ public class UserBean {
 
 	public void setUser(String aux) {
 		user = aux;
+	}
+        
+        public String getNotif() {
+		return this.notif;
+	}
+
+	public void setNotif(String aux) {
+		notif = aux;
 	}
 
 	public String getPass() {

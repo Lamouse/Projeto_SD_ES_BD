@@ -28,6 +28,7 @@ public interface ExecuteCommands extends java.rmi.Remote {
     public boolean addWatchlist(int ideiaID, int idUser) throws java.rmi.RemoteException;
     public boolean removeWatchlist(int ideiaID, int idUser) throws java.rmi.RemoteException;
     public ArrayList seeWatchlist(int idUser) throws java.rmi.RemoteException;
-    public boolean addPessoa(String username, String password,int fbid, String token) throws java.rmi.RemoteException;
-    public ArrayList<String> getDataUser1(int fbid, String token) throws java.rmi.RemoteException;
+    public boolean addPessoa(String username, String password, String fbid, String token) throws java.rmi.RemoteException;
+    public ArrayList<String> getDataUser1(String fbid, String token) throws java.rmi.RemoteException;
+    public void subscribe(Hello_C_I client) throws RemoteException;
 }

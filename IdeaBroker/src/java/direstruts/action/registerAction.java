@@ -10,10 +10,11 @@ public class registerAction extends ActionSupport {
     private String user;
     private String pass;
     private String token;
-    private int fbid;
+    private String fbid;
 
     @Override
-    public String execute() throws Exception {  
+    public String execute() throws Exception {
+        //System.out.println("->"+fbid+" "+token);
         if(addPeople())
             return SUCCESS;
         return ERROR;
@@ -23,7 +24,7 @@ public class registerAction extends ActionSupport {
         boolean cond = false;
         try{
             ExecuteCommands srmi = (ExecuteCommands)Naming.lookup("rmi://localhost:1099/ServerRMI");
-            if(fbid==0){
+            if(fbid.isEmpty()){
                 if(srmi.addPessoa(user,pass))
                     cond = true;
             }
@@ -35,7 +36,7 @@ public class registerAction extends ActionSupport {
             System.err.println("Erro no RMI: " + e);
         }
         return cond;
-    }    
+    } 
         
     public String getUser() {
     	return user;
@@ -82,11 +83,11 @@ public class registerAction extends ActionSupport {
     	token = aux;
     }
            
-    public int getFbid() {
+    public String getFbid() {
     	return fbid;
     }
 
-    public void setFbid(int aux) {
+    public void setFbid(String aux) {
     	fbid = aux;
     }
 }

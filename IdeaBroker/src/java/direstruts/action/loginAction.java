@@ -13,7 +13,7 @@ public class loginAction extends ActionSupport implements SessionAware {
 	private static final long serialVersionUID = 4L;
 	private Map<String, Object> session;
         private String token;
-        private int fbid;
+        private String fbid;
 
         /*private String buttonLogin;
         public void setButtonName(String buttonLogin) {
@@ -24,8 +24,8 @@ public class loginAction extends ActionSupport implements SessionAware {
 	public String execute() throws Exception {
             UserBean user = (UserBean) session.get("userBean");
             int aux;
-            //System.out.println("->"+fbid);
-            if(fbid==0){
+            //System.out.println("->"+fbid+" "+token);
+            if(fbid.isEmpty()){
                 user.setId(-1);
                 setUserBean(user);
                 aux = getUserBean().getId();
@@ -79,11 +79,11 @@ public class loginAction extends ActionSupport implements SessionAware {
             token = aux;
         }
 
-        public int getFbid() {
+        public String getFbid() {
             return fbid;
         }
 
-        public void setFbid(int aux) {
+        public void setFbid(String aux) {
             fbid = aux;
         }
 

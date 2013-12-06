@@ -1,9 +1,9 @@
 package direstruts.xmeta1;
 
-import com.restfb.DefaultFacebookClient;
+/*import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.Parameter;
-import com.restfb.types.FacebookType;
+import com.restfb.types.FacebookType;*/
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,8 +23,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.naming.NamingException;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.scribe.builder.ServiceBuilder;
+import org.scribe.builder.api.FacebookApi;
+import org.scribe.model.OAuthRequest;
+import org.scribe.model.Response;
+import org.scribe.model.Token;
+import org.scribe.model.Verb;
+import org.scribe.oauth.OAuthService;
 
 public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands {
     private static int PORT_RMI = 1099;
@@ -33,6 +44,10 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     private String password = "sd";
     private Connection DBConn = null;
     private final static DateFormat dateFormat =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+    private static Hello_C_I serverwebsocket;
+    private final String apiKey = "1417726098459428";
+    private final String apiSecret = "1419cadca32865a40d32dfad61ea0078";
+    private String host = "http://169.254.211.96:8080";
 
     Servidor_RMI() throws RemoteException, SQLException {
         InputStreamReader isr = new InputStreamReader( System.in );
@@ -59,6 +74,10 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         else {
             System.out.println("Failed to make connection!");
         }
+    }
+
+    public void subscribe(Hello_C_I c) throws RemoteException {
+        serverwebsocket = c;
     }
 
     private Integer tryParse(String text) {
@@ -132,7 +151,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     public Mensagem retrieveTopicos() throws RemoteException {
-        String topicos = "SELECT * FROM TOPICO";
+        String topicos = "SELECT * FROM TOPICO ORDER BY IDTOPICO";
         Mensagem mTopicos = new Mensagem(4,0);
         try {
             Statement statement = DBConn.createStatement();
@@ -153,7 +172,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     public Mensagem retrieveAttributes(int userID, int ideiaID) throws RemoteException {
         String attributes = "SELECT IDUSER, PRICE, NR_SHARE FROM USER_SHARE " +
-                "WHERE IDIDEIA = " + ideiaID + " AND IDUSER != " + userID;
+                "WHERE IDIDEIA = " + ideiaID + " AND IDUSER != " + userID + " ORDER BY PRICE";
         Mensagem mIdeias = new Mensagem(8, ideiaID);
         try {
             Statement statement = DBConn.createStatement();
@@ -190,6 +209,16 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 m.addList(rs2.getString(2));
                 m.addList(rs2.getString(1) + ";\n");
             }
+            
+            String removeUserDataOffline = "DELETE FROM OFFLINE_USERS WHERE IDUSER = " + userID;
+            try {
+                statement.executeUpdate(removeUserDataOffline);
+                DBConn.commit();
+            }catch (SQLException e) {
+                System.err.println("Connection Failed removing userDataOffline! Check output console");
+                RollBack();
+            }
+            
             rs1.close();;
             rs2.close();
             statement.close();
@@ -203,7 +232,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 + "where USER_SHARE.idideia = ideia.idideia AND USER_SHARE.IDUSER = " + userID;*/
         String ideias = "select i.idideia, i.mensagem, i.total_share, us.price, "
                 + "us.nr_share  from ideia i, USER_SHARE us "
-                + "where us.idideia = i.idideia AND us.IDUSER = " + userID;
+                + "where us.idideia = i.idideia AND us.IDUSER = " + userID + " ORDER BY i.idideia";
 
         Mensagem mIdeias = new Mensagem(11, 0);
         //String ideiaID, mensagem, opiniao, total_share, price, nr_share, topicosCumulativos;
@@ -259,7 +288,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     public Mensagem retrieveIdeias(int topicoID) throws RemoteException {
         //String ideias = "SELECT IDEIA.IDIDEIA, IDEIA.MENSAGEM, IDEIA.OPINIAO FROM TOPICO_IDEIA, IDEIA " +
         String ideias = "SELECT IDEIA.IDIDEIA, IDEIA.MENSAGEM, IDEIA.IS_FAME FROM TOPICO_IDEIA, IDEIA " +
-                "WHERE TOPICO_IDEIA.IDIDEIA = IDEIA.IDIDEIA AND TOPICO_IDEIA.IDTOPICO = " + topicoID;
+                "WHERE TOPICO_IDEIA.IDIDEIA = IDEIA.IDIDEIA AND TOPICO_IDEIA.IDTOPICO = " + topicoID + " ORDER BY IDEIA.IDIDEIA";
         Mensagem mIdeias = new Mensagem(5,0);
         try {
             Statement statement = DBConn.createStatement();
@@ -302,7 +331,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         /*String ideias = "SELECT IDEIA.IDIDEIA, IDEIA.MENSAGEM, IDEIA.OPINIAO FROM TOPICO_IDEIA, IDEIA " +
                 "WHERE TOPICO_IDEIA.IDIDEIA = IDEIA.IDIDEIA AND TOPICO_IDEIA.IDTOPICO = " + topicoID;*/
         String ideias = "SELECT I.IDIDEIA, I.MENSAGEM, I.IS_FAME FROM TOPICO_IDEIA TI, IDEIA I " +
-                "WHERE TI.IDIDEIA = I.IDIDEIA AND TI.IDTOPICO = " + topicoID;
+                "WHERE TI.IDIDEIA = I.IDIDEIA AND TI.IDTOPICO = " + topicoID + " ORDER BY I.IDIDEIA";
 
 
         Mensagem mIdeias = new Mensagem(13, 0);
@@ -432,7 +461,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         return id;
     }
 
-    private boolean hasFace(int fbid) {
+    private boolean hasFace(String fbid) {
         boolean cond = false;
         String aux = "SELECT IDUSER FROM USER_FACEBOOK WHERE IDFACEBOOK = " + fbid;
         try {
@@ -449,7 +478,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         return cond;
     }
 
-    public boolean addPessoa(String username, String password,int fbid, String token) throws RemoteException {
+    public boolean addPessoa(String username, String password, String fbid, String token) throws RemoteException {
         if(!hasPessoa(username)){
             if(!hasFace(fbid)){
                 addNewPessoa(username,password,fbid,token);
@@ -503,7 +532,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         return false;
     }
     
-    public boolean addNewPessoa(String username, String password, int faceid, String token) {
+    public boolean addNewPessoa(String username, String password, String faceid, String token) {
         int userID = incrementUserID();
         String insertUser = "INSERT INTO UTILIZADOR VALUES (" + userID + ",'" + username + "','" + password+ "'," + 1000000 +")";
         String insertUserFace = "INSERT INTO USER_FACEBOOK VALUES("+userID+","+faceid+",'"+token+"')";
@@ -621,11 +650,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     // Faz pop do histórico de um user específico
     public String popUserDataOffline(int userID) {
-        String getUserDataOffline, removeUserDataOffline, userOfflineData = "";
+        String getUserDataOffline, userOfflineData = "";
         if(verifyUserOfflne(userID)) {
             getUserDataOffline = "SELECT USERS_BUYERS FROM OFFLINE_USERS " +
-                    "WHERE IDUSER = " + userID;
-            removeUserDataOffline = "DELETE FROM OFFLINE_USERS " +
                     "WHERE IDUSER = " + userID;
             try{
                 Statement statement = DBConn.createStatement();
@@ -636,13 +663,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                     rs.close();
 
                 }catch (SQLException e) {System.err.println("Connection Failed retrieving userDataOffline! Check output console");}
-                try {
-                    statement.executeUpdate(removeUserDataOffline);
-                    DBConn.commit();
-                }catch (SQLException e) {
-                    System.err.println("Connection Failed removing userDataOffline! Check output console");
-                    RollBack();
-                }
                 statement.close();
             }catch (SQLException e) {
                 System.err.println("Connection Failed retrieving userDataOffline! Check output console");
@@ -668,6 +688,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 }catch (SQLException e) {
                     System.err.println("Connection Failed updating UserOffline! Check output console: " + e);
                     RollBack();
+                    return;
                 }
             }
         }
@@ -682,10 +703,40 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             }catch (SQLException e) {
                 System.err.println("Connection Failed Inserting UserOffline! Check output console: " + e);
                 RollBack();
+                return;
             }
         }
+        notify_webUsers(userID);
     }
 
+    private void notify_webUsers(int idUser) {
+        String aux = "SELECT USERS_BUYERS FROM OFFLINE_USERS WHERE IDUSER = " + idUser;
+        
+        try {
+            Statement statement = DBConn.createStatement();
+            ResultSet rs = statement.executeQuery(aux);
+            if(rs.next()){
+                String aux1 = rs.getString(1);
+                String msg = "";
+                
+                if(aux1.contains("|"+Integer.toString(idUser)+"|")){
+                    msg += "O utilizador " + idUser + " acabou de comprar shares. ";
+                    aux1.replace("|"+Integer.toString(idUser)+"|", "");
+                }
+                msg += "Os utilizadores com o id igual a " + aux1.replace("||",", ").replace("|"," ") + "acabaram de lhe comprar shares.";
+                try {
+                    serverwebsocket.print_on_client(Integer.toString(idUser),msg);
+                } catch (RemoteException ex) {
+                    Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            rs.close();
+            statement.close();
+        }catch (SQLException e) {
+            System.err.println("Connection Failed verifying UserOffline! Check output console: " + e);
+        }
+    }
+    
     public boolean verifyUserOfflne(int userID) {
         String getUserOffline = "SELECT IDUSER FROM OFFLINE_USERS " +
                 "WHERE IDUSER = " + userID;
@@ -980,7 +1031,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             return false;
     }
     
-    private String postfacebook(int id_user,String mensagem, int inv) {
+    private String postfacebook(int id_user, String mensagem, int inv) {
         String aux = "";
         String gettoken = "SELECT TOKEN FROM USER_FACEBOOK WHERE IDUSER = " + id_user;
         try {
@@ -989,9 +1040,25 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             if(rs.next()){
                 String token = rs.getString(1);
                 String msg = "O utilizador com o id igual a "+id_user+" criou a seguinte ideia:\n\n"+mensagem+"\n\nEle investiu na idea "+inv+" Deicoins.";
-                FacebookClient facebookClient = new DefaultFacebookClient(token);
-                FacebookType publishMessageResponse = facebookClient.publish("me/feed", FacebookType.class, Parameter.with("message", msg));
-                aux = publishMessageResponse.getId();
+                OAuthService service = new ServiceBuilder()
+                             .provider(FacebookApi.class)
+                             .apiKey(apiKey)
+                             .apiSecret(apiSecret)
+                             .callback(host)
+                             .build();
+                OAuthRequest r = new OAuthRequest(Verb.POST, "https://graph.facebook.com/me/feed");
+                r.addHeader("Content-Type", "text/html");
+                r.addBodyParameter("message", mensagem);
+
+                Token token_final = new Token(token,apiSecret);
+                service.signRequest(token_final, r);
+                Response authResponse = r.send();
+                
+                try{
+                    aux = new JSONObject(authResponse.getBody()).getString("id");
+                } catch(JSONException e){
+                    System.err.println("Error connect Facebook Server. " + e);
+                }
             }
         } catch (SQLException e) {
             System.err.println("Connection Failed Facebook Server! Check output console " + e);
@@ -1032,12 +1099,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             System.err.println("Não possui todas as shares da ideia a remover");
             return false;
         }
-        /*String removeTopico_Ideia = "DELETE FROM TOPICO_IDEIA "
-                + "WHERE IDIDEIA = " + ideiaID;
-        String removeIdeia_Ideia = "DELETE FROM PENDING_TRANSACTION "
-                + "WHERE IDIDEIA = " + ideiaID;
-        String removeAttribute = "DELETE FROM USER_SHARE "
-                + "WHERE IDIDEIA = " + ideiaID + " AND IDUSER = " + pessoaID;  */
+
         String removeIdeia = "DELETE FROM IDEIA "
                 + "WHERE IDIDEIA = " + ideiaID;
         try{
@@ -1062,12 +1124,11 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     
     private void deletefacebook(int idIdeia) {
         String aux = "SELECT CREATOR, ID_FACEBOOK FROM IDEIA WHERE IDIDEIA = " + idIdeia;
-        System.out.println("OLA");
         try{
             Statement statement = DBConn.createStatement();
             ResultSet rs = statement.executeQuery(aux);
             if(rs.next()){
-                int id_user = rs.getInt(1);
+                String id_user = rs.getString(1);
                 String aux_str = rs.getString(2);
                 
                 String aux1 = "SELECT TOKEN FROM USER_FACEBOOK WHERE IDUSER = " + id_user;
@@ -1076,18 +1137,26 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 rs1.next();
                 String access_token = rs1.getString(1);
                 
-                FacebookClient facebookClient = new DefaultFacebookClient(access_token);
-                facebookClient.deleteObject(aux_str);
+                OAuthService service = new ServiceBuilder()
+                             .provider(FacebookApi.class)
+                             .apiKey(apiKey)
+                             .apiSecret(apiSecret)
+                             .callback(host) // Do not change this.
+                             .build();
+                OAuthRequest r = new OAuthRequest(Verb.DELETE, "https://graph.facebook.com/" + aux_str);
+
+                Token token_final = new Token(access_token,apiSecret);
+                service.signRequest(token_final, r);
+                Response authResponse = r.send();
                 
                 rs1.close();
                 statement1.close();
-                System.out.println("ADEUS");
             }
             rs.close();
             statement.close();
         }catch (SQLException e) {
             System.err.println("Connection Failed Facebook Server! Check output console " + e);
-        }        
+        }
     }
 
     private boolean veriffyUser_ShareTotality(int pessoaID, int ideiaID) {
@@ -1333,7 +1402,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 DBConn.commit();
                 insereUserDataOffline(idVende,idCompra);
                 insereUserDataOffline(idCompra,idCompra);
-                commentfacebook(idVende,idCompra,idIdeia,sharesToBuy,precoCompra,dataString);
                 return true;
             } catch (SQLException e) {System.err.println("Connection Failed Commiting! Check output console " + e);
                 RollBack();
@@ -1347,24 +1415,35 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     private void commentfacebook(int idVende, int idCompra, int idIdeia, int sharesToBuy, double precoCompra, String dataString){
-        String aux = "SELECT CREATOR, ID_FACEBOOK FROM IDEIA WHERE IDIDEIA = " + idIdeia;
+        String aux = "SELECT TOKEN FROM USER_FACEBOOK WHERE IDUSER = " + idCompra;
         try{
             Statement statement = DBConn.createStatement();
             ResultSet rs = statement.executeQuery(aux);
             if(rs.next()){
-                int id_user = rs.getInt(1);
-                String aux_str = rs.getString(2);
-                
-                String aux1 = "SELECT TOKEN FROM USER_FACEBOOK WHERE IDUSER = " + id_user;
+                String access_token = rs.getString(1);
+                String aux1 = "SELECT CREATOR, ID_FACEBOOK FROM IDEIA WHERE IDIDEIA = " + idIdeia;
                 Statement statement1 = DBConn.createStatement();
                 ResultSet rs1 = statement1.executeQuery(aux1);
                 rs1.next();
-                String access_token = rs1.getString(1);
-                String msg = "Na data de "+dataString+" o utilizador com o id igual a "+idCompra+" comprou "+sharesToBuy+" shares da ideia com o id igual a "+idIdeia+" ao preço de "+precoCompra+" Deicoins por share ao utilizador com o id igual a "+idVende;
-                DefaultFacebookClient client = new DefaultFacebookClient(access_token);
-                client.publish(aux_str+"/comments", String.class, Parameter.with("message", msg));
-                
-                
+                int id_user = rs1.getInt(1);
+                String aux_str = rs1.getString(2);
+                if(!aux_str.isEmpty()){
+                    String msg = "Na data de "+dataString+" o utilizador com o id igual a "+idCompra+" comprou "+sharesToBuy+" shares da ideia com o id igual a "+idIdeia+" ao preço de "+precoCompra+" Deicoins por share ao utilizador com o id igual a "+idVende;
+                    
+                    OAuthService service = new ServiceBuilder()
+                             .provider(FacebookApi.class)
+                             .apiKey(apiKey)
+                             .apiSecret(apiSecret)
+                             .callback(host)
+                             .build();
+                    OAuthRequest r = new OAuthRequest(Verb.POST, "https://graph.facebook.com/"+aux_str+"/comments");
+                    r.addHeader("Content-Type", "text/html");
+                    r.addBodyParameter("message", msg);
+
+                    Token token_final = new Token(access_token,apiSecret);
+                    service.signRequest(token_final, r);
+                    Response authResponse = r.send();
+                }
                 rs1.close();
                 statement1.close();
             }
@@ -1373,7 +1452,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         }catch (SQLException e) {
             System.err.println("Connection Failed Facebook Server! Check output console " + e);
         }        
-        
     }
     
     // Verifica se a Compra é Possivel de se realizar
@@ -1483,16 +1561,16 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     // Executa a transacção tendo esta sido aceite
     private boolean transaccaoAcceptedIdeia(int idVende, int idCompra, int ideiaTransaction, int sharesToBuy, double newPrice, double precoCompra, String dataString) {
-        boolean hasAttributeIdea = existingAttribute(idCompra, ideiaTransaction);
+        //boolean hasAttributeIdea = existingAttribute(idCompra, ideiaTransaction);
         boolean didItWork = true;
-        if(hasAttributeIdea) {
+        //if(hasAttributeIdea) {
             if(!bounceMoneyAndShares(idVende, idCompra, ideiaTransaction, sharesToBuy, newPrice, dataString))
                 didItWork = false;
-        }
+        /*}
         else {
             if(!bounceMoneyAndShares(idVende, idCompra, ideiaTransaction, sharesToBuy, newPrice, dataString))
                 didItWork = false;
-        }
+        }*/
         /*if(!verifyRemoveAttributeSeller(idVende, ideiaTransaction))
             didItWork = false;*/
 
@@ -1628,6 +1706,8 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                     !addTransactionDescription(idCompra, "Utilizador comprou  " + sharesToBuy+" shares da ideia " + ideiaTransaction + " por " + preco + " DEIcoins ao utilizador " + idVende, dataString))
                 return false;
 
+            commentfacebook(idVende,idCompra,ideiaTransaction,sharesToBuy,preco,dataString);
+            
             statement.close();
         } catch (SQLException e) {
             System.err.println(e);
@@ -1784,7 +1864,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     public ArrayList retrieveHoF() throws RemoteException {
         ArrayList aux = new ArrayList();
-        String selHof = "SELECT * FROM HALL_OF_FAME";
+        String selHof = "SELECT * FROM HALL_OF_FAME ORDER BY IDIDEIA";
         int id_ideia;
         double inves;
         String temp;
@@ -1861,7 +1941,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     public ArrayList seeWatchlist(int idUser) throws RemoteException {
         String ideias = "SELECT I.IDIDEIA, I.MENSAGEM, I.IS_FAME FROM IDEIA I, WATCHLIST W " +
-                "WHERE W.IDIDEIA = I.IDIDEIA AND W.IDUSER = " + idUser;
+                "WHERE W.IDIDEIA = I.IDIDEIA AND W.IDUSER = " + idUser + " ORDER BY I.IDIDEIA";
         ArrayList aux = new ArrayList();
         Map map;
         try {
@@ -1882,7 +1962,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         return aux;
     }
     
-    public ArrayList getDataUser(int fbid, String token) throws RemoteException {
+    public ArrayList getDataUser(String fbid, String token) throws RemoteException {
         ArrayList aux = new ArrayList();
         String search_user = "SELECT IDUSER FROM USER_FACEBOOK WHERE IDFACEBOOK = " + fbid;
         int id_user;
@@ -1914,7 +1994,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         return aux;
     }
     
-    public ArrayList<String> getDataUser1(int fbid, String token) throws RemoteException {
+    public ArrayList<String> getDataUser1(String fbid, String token) throws RemoteException {
         ArrayList<String> aux = new ArrayList();
         String search_user = "SELECT IDUSER FROM USER_FACEBOOK WHERE IDFACEBOOK = " + fbid;
         int id_user;

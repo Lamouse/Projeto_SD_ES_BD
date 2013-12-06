@@ -9,6 +9,55 @@
         <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
         <title>IdeaBroker</title>
         <link href="css/style.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript">
+            var websocket;
+
+            window.onload = function() { // execute once the page loads
+                initialize();
+            }
+
+            function initialize() { // URI = ws://10.16.0.165:8080/chat/chat
+                connect('ws://' + window.location.host + '/IdeaBroker/chat');
+            }
+
+            function connect(host) { // connect to the host websocket servlet
+                if ('WebSocket' in window)
+                    websocket = new WebSocket(host);
+                else if ('MozWebSocket' in window)
+                    websocket = new MozWebSocket(host);
+                else {
+                    writeToHistory('Get a real browser which supports WebSocket.');
+                    return;
+                }
+
+                websocket.onopen    = onOpen; // set the event listeners below
+                websocket.onclose   = onClose;
+                websocket.onmessage = onMessage;
+                websocket.onerror   = onError;
+            }
+
+            function onOpen(event) {
+                writeToHistory('Connected to ' + window.location.host + '.');
+                websocket.send('${userBean.id}');
+            }
+
+            function onClose(event) {
+                writeToHistory('WebSocket closed.');
+            }
+
+            function onMessage(message) { // print the received message
+                writeToHistory(message.data);
+            }
+
+            function onError(event) {
+                writeToHistory('WebSocket error (' + event.data + ').');
+            }
+            
+            function writeToHistory(text) {
+                var markee = document.getElementById('history');
+                markee.textContent = text;
+            }
+        </script>       
     </head>
     <body>
         <div id="logo" align="center">
@@ -26,7 +75,7 @@
             </ul>
        	</div>
 		<br />
-        <marquee class="notificacao" behavior="SCROLL" direction="RIGHT">Não existem notificações</marquee>
+        <marquee id="history" class="notificacao" behavior="SCROLL" direction="RIGHT"></marquee>
         <br /><br />
         
         <div class="left">

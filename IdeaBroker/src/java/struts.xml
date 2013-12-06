@@ -10,6 +10,7 @@ and should reside on the classpath of the webapp (generally /WEB-INF/classes). -
 <struts>
 
     <!-- devMode equals mode debug information and reload everything for every request -->
+    <constant name="struts.action.excludePattern" value="/chat*" />
     <constant name="struts.devMode" value="true" />
 
     <package name="direstruts" extends="struts-default">

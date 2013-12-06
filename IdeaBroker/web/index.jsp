@@ -22,16 +22,6 @@
 
                 FB.Event.subscribe('auth.authResponseChange', function(response) {
                     document.getElementById('token').value = response.authResponse.accessToken;
-                    /*if (response.status === 'connected') {
-                        document.getElementById("message").innerHTML +=  "<br>Connected to Facebook";
-                        //SUCCESS
-                    }	 
-                    else if (response.status === 'not_authorized') {
-                        document.getElementById("message").innerHTML +=  "<br>Failed to Connect";
-                    } else {
-                        document.getElementById("message").innerHTML +=  "<br>Logged Out";
-                        //UNKNOWN ERROR
-                    }*/
                 });	
             };
 
@@ -84,7 +74,7 @@
             <s:form action="login" method="post" cssStyle="margin-left:auto; margin-right:auto; width:100%">
                 <s:textfield name="userBean.user" label="Username*"/>
                 <s:password name="userBean.pass" label="Password*"/>
-                <s:hidden id="fbid" name="fbid" value="0"/>
+                <s:hidden id="fbid" name="fbid" value=""/>
                 <s:hidden id="token" name="token" value=""/>
                 <s:submit value='Login' cssClass="buttonlogin" align="center"/> 
             </s:form>
