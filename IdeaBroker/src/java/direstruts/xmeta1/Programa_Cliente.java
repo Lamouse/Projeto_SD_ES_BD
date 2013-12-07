@@ -117,10 +117,10 @@ public class Programa_Cliente extends javax.swing.JFrame {
     private javax.swing.JTextArea jTextArea_see_user;
 
 
-	private static final long serialVersionUID = 1L;
-	private String ip_server1 = "localhost";
-	private String ip_server2 = "localhost";
-	private int port = 7000;
+    private static final long serialVersionUID = 1L;
+    private String ip_server1 = "localhost";
+    private String ip_server2 = "localhost";
+    private int port = 7000;
     private String server;
     private Socket s = null;
     private ObjectOutputStream oos;

@@ -9,9 +9,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Servidor_TCP {
 	private String ip_server = "localhost";
-    private String ip_RMI = "localhost";
+        private String ip_RMI = "localhost";
 	private int serverPort = 7000;
-    private int serverRMI = 1099;
+        private int serverRMI = 1099;
 	private static CopyOnWriteArrayList<Integer> idUser = new CopyOnWriteArrayList<Integer>();
 	private static CopyOnWriteArrayList<ObjectOutputStream> socketUser = new CopyOnWriteArrayList<ObjectOutputStream>();
 	

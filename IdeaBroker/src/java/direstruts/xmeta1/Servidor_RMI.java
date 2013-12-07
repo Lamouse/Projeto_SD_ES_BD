@@ -40,7 +40,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     private String password = "sd";
     private Connection DBConn = null;
     private final static DateFormat dateFormat =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-    private static Hello_C_I serverwebsocket;
+    private static Hello_C_I serverwebsocket = null;
     private final String apiKey = "1417726098459428";
     private final String apiSecret = "1419cadca32865a40d32dfad61ea0078";
     private String host = "http://169.254.211.96:8080";
@@ -607,10 +607,12 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             statement.executeUpdate(insertTopic);
             cond = true;
             statement.close();
-            try {
-                serverwebsocket.print_all_client("Id Topic = "+topicoID+"\t->New topic");
-            } catch (RemoteException ex) {
-                Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+            if(serverwebsocket != null){
+                try {
+                    serverwebsocket.print_all_client("Id Topic = "+topicoID+"\t->New topic");
+                } catch (RemoteException ex) {
+                    Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }catch (SQLException e) {
             System.err.println("Connection Failed creating Topic! Check output console " + e);
@@ -728,10 +730,12 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                     aux1.replace("|"+Integer.toString(idUser)+"|", "");
                 }
                 msg += "Os utilizadores com o id igual a " + aux1.replace("||",", ").replace("|"," ") + "acabaram de lhe comprar shares.";
-                try {
-                    serverwebsocket.print_on_client(Integer.toString(idUser),msg);
-                } catch (RemoteException ex) {
-                    Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+                if(serverwebsocket != null){
+                    try {
+                        serverwebsocket.print_on_client(Integer.toString(idUser),msg);
+                    } catch (RemoteException ex) {
+                        Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
             rs.close();
@@ -1000,11 +1004,12 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                         }
                     }
                 }*/
-                
-                try {
-                    serverwebsocket.print_all_client("Id Ideia = "+ideiaID+"\t->New idea");
-                } catch (RemoteException ex) {
-                    Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+                if(serverwebsocket != null){
+                    try {
+                        serverwebsocket.print_all_client("Id Ideia = "+ideiaID+"\t->New idea");
+                    } catch (RemoteException ex) {
+                        Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
                 
                 try {
@@ -1130,11 +1135,13 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             RollBack();
             return false;
         }
-        try {
+        if(serverwebsocket != null){
+            try {
                 serverwebsocket.print_all_client("Id Idea = "+ideiaID+"\t->Deleted");
             } catch (RemoteException ex) {
                 Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
         return true;
     }
     
@@ -1740,12 +1747,13 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             
             commentfacebook(idVende,idCompra,ideiaTransaction,sharesToBuy,preco,dataString);
             
-            try {
-                serverwebsocket.print_all_client("Id Ideia = "+ideiaTransaction+"\t->"+preco+"Deicoins");
-            } catch (RemoteException ex) {
-                Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+            if(serverwebsocket != null){
+                try {
+                    serverwebsocket.print_all_client("Id Ideia = "+ideiaTransaction+"\t->"+preco+"Deicoins");
+                } catch (RemoteException ex) {
+                    Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
-            
             //System.out.println("CHEGOU AQUI!10");
             statement.close();
         } catch (SQLException e) {
@@ -1892,13 +1900,13 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             rs.close();
             statement.close(); 
             DBConn.commit();
-            
-            try {
-                serverwebsocket.print_all_client("Id Ideia = "+ideiaID+"\t->Added to Hall of Fame");
-            } catch (RemoteException ex) {
-                Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+            if(serverwebsocket != null){
+                try {
+                    serverwebsocket.print_all_client("Id Ideia = "+ideiaID+"\t->Added to Hall of Fame");
+                } catch (RemoteException ex) {
+                    Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
-            
         }catch (SQLException e) {
             System.err.println("Connection Failed Buying shares. Check output console " + e);
             RollBack();

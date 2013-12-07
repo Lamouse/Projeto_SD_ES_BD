@@ -14,7 +14,7 @@ public class Mensagem implements Serializable {
 	private int id_user = 0;
 	private String dataString = "";
 	private final static DateFormat dateFormat =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-    private NamedByteArray file = null;
+        private NamedByteArray file = null;
 	
 	/*tipo
 	 * 1	Login (a esta msg estará acoplado as notificações offline)
