@@ -112,3 +112,15 @@ body{
 .buttonlogin{
     width: 100px;
 }
+
+#ideia_hist{
+    height: 150px;
+    font-family: Courier, monospace;
+    font-size: .9em;
+    border: 1px solid #AACAAC;
+    border-right-color: #AACAAC;
+    border-bottom-color: #AACAAC;
+    overflow-y: scroll;
+    padding: 5px;
+    width: 100%;
+}

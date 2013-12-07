@@ -54,8 +54,21 @@
             }
             
             function writeToHistory(text) {
-                var markee = document.getElementById('history');
-                markee.textContent = text;
+                if(text.indexOf('all:')===0){
+                    text = text.replace('all:','');
+                    var history = document.getElementById('ideia_hist');
+                    var p = document.createElement('p');
+                    p.style.wordWrap = 'break-word';
+                    p.innerHTML = text;
+                    history.appendChild(p);
+                    while (history.childNodes.length > 25)
+                        history.removeChild(console.firstChild);
+                    history.scrollTop = history.scrollHeight;
+                }
+                else{
+                    var markee = document.getElementById('history');
+                    markee.textContent = text;
+                }
             }
         </script>       
     </head>
@@ -115,9 +128,13 @@
                                         <s:form action="buyshare" method="post">
                                             <s:hidden name="iduser" value='%{#session.userBean.id}' />
                                             <s:hidden name="idideia" value='%{#attr.value1.one}' />
-                                            <s:textfield name="nr" label="Nr Share"/>
-                                            <s:textfield name="price" label="Buy Price"/>
-                                            <s:textfield name="newprice" label="New Price"/>
+                                            <c:choose>
+                                                <c:when test="${userBean.id != 0}">
+                                                    <s:textfield name="nr" label="Nr Share"/>
+                                                    <s:textfield name="price" label="Buy Price"/>
+                                                    <s:textfield name="newprice" label="New Price"/>
+                                                 </c:when>
+                                            </c:choose>
                                             <s:submit value='Buy Shares' align="center"/> 
                                         </s:form>
                                         <!--<s:property value="idideia" />-->
@@ -157,6 +174,11 @@
         <div style="clear:both">
         	<br><br><br>
         </div>
+
+        Stock exchange of ideas:
+        <div id="ideia_hist"></div>
+        <br><br><br>
+                        
         <div id="out">
             <s:a href="logout">Logout</s:a>
         </div>              

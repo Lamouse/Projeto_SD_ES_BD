@@ -1,9 +1,5 @@
 package direstruts.xmeta1;
 
-/*import com.restfb.DefaultFacebookClient;
-import com.restfb.FacebookClient;
-import com.restfb.Parameter;
-import com.restfb.types.FacebookType;*/
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -61,6 +57,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             user = stdin.readLine();
             System.out.print( "Introduza a senha do Utilizador da Base de Dados: " );
             password = stdin.readLine();
+            System.out.print( "Introduza seu IP: " );
+            host = stdin.readLine();
+            host = "http://"+host+":8080";
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -267,7 +266,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 }
 
                 mIdeias.addList(ideiaID);
-                //addRespostaMensagem(mIdeias, ideiaID, mensagem);
+                //addRespostprint_on_clientaMensagem(mIdeias, ideiaID, mensagem);
                 mIdeias.addList(mensagem);
                 //mIdeias.addList(opiniao);
                 mIdeias.addList(total_share);
@@ -608,6 +607,11 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             statement.executeUpdate(insertTopic);
             cond = true;
             statement.close();
+            try {
+                serverwebsocket.print_all_client("Id Topic = "+topicoID+"\t->New topic");
+            } catch (RemoteException ex) {
+                Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }catch (SQLException e) {
             System.err.println("Connection Failed creating Topic! Check output console " + e);
             RollBack();
@@ -867,8 +871,8 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         try{
             Statement statement = DBConn.createStatement();
             ResultSet rs = statement.executeQuery(getAtributo);
-            rs.next();
-            what = rs.getLong(1);
+            if(rs.next())
+                what = rs.getLong(1);
             rs.close();
             statement.close();
         } catch (SQLException e) {System.err.println("Connection Failed Finding AttributeID! Check output console " + e);}
@@ -996,6 +1000,13 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                         }
                     }
                 }*/
+                
+                try {
+                    serverwebsocket.print_all_client("Id Ideia = "+ideiaID+"\t->New idea");
+                } catch (RemoteException ex) {
+                    Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
                 try {
                     statement.executeBatch();
                 }catch (SQLException e) {
@@ -1119,6 +1130,11 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             RollBack();
             return false;
         }
+        try {
+                serverwebsocket.print_all_client("Id Idea = "+ideiaID+"\t->Deleted");
+            } catch (RemoteException ex) {
+                Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+            }
         return true;
     }
     
@@ -1207,8 +1223,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 if(nr_shares > 0){
                     String addPendingTransaction = "INSERT INTO PENDING_TRANSACTION VALUES (" +
                             userID + ", " + ideiaID + ", " + newPrice + ", " + maxPrice + ", " + nr_shares + ")";
-
-                    //System.out.println(addPendingTransaction);
 
                     try{
                         Statement statement = DBConn.createStatement();
@@ -1333,9 +1347,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                             idVende = 0;
                         }
                         else{
-	                        nr_share = dif_aux;
-	                        idVende = getIDVendeByIdeia(idIdeia, maxPrice, idCompra);
-	                        dataString = dateFormat.format(new Date());
+                            nr_share = dif_aux;
+                            idVende = getIDVendeByIdeia(idIdeia, maxPrice, idCompra);
+                            dataString = dateFormat.format(new Date());
                     	}
                     }
                 }
@@ -1397,13 +1411,19 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         boolean isPossible = verifyTransaction(idVende, idCompra, idIdeia, sharesToBuy, precoCompra, dataString);
 
         if(isPossible){
-            if(transaccaoAcceptedIdeia(idVende, idCompra, idIdeia, sharesToBuy, newPrice, precoCompra, dataString));
-            try {
-                DBConn.commit();
-                insereUserDataOffline(idVende,idCompra);
-                insereUserDataOffline(idCompra,idCompra);
-                return true;
-            } catch (SQLException e) {System.err.println("Connection Failed Commiting! Check output console " + e);
+            if(transaccaoAcceptedIdeia(idVende, idCompra, idIdeia, sharesToBuy, newPrice, precoCompra, dataString)){
+                try {
+                    DBConn.commit();
+                    insereUserDataOffline(idVende,idCompra);
+                    insereUserDataOffline(idCompra,idCompra);
+                    return true;
+                } catch (SQLException e) {
+                    System.err.println("Connection Failed Commiting! Check output console " + e);
+                    RollBack();
+                    return false;
+                }
+            }
+            else{
                 RollBack();
                 return false;
             }
@@ -1421,15 +1441,14 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             ResultSet rs = statement.executeQuery(aux);
             if(rs.next()){
                 String access_token = rs.getString(1);
-                String aux1 = "SELECT CREATOR, ID_FACEBOOK FROM IDEIA WHERE IDIDEIA = " + idIdeia;
+                String aux1 = "SELECT ID_FACEBOOK FROM IDEIA WHERE IDIDEIA = " + idIdeia + " AND ID_FACEBOOK IS NOT NULL";
                 Statement statement1 = DBConn.createStatement();
                 ResultSet rs1 = statement1.executeQuery(aux1);
-                rs1.next();
-                int id_user = rs1.getInt(1);
-                String aux_str = rs1.getString(2);
-                if(!aux_str.isEmpty()){
-                    String msg = "Na data de "+dataString+" o utilizador com o id igual a "+idCompra+" comprou "+sharesToBuy+" shares da ideia com o id igual a "+idIdeia+" ao preço de "+precoCompra+" Deicoins por share ao utilizador com o id igual a "+idVende;
+                if(rs1.next()){
+                    String aux_str = rs1.getString(1);
                     
+                    String msg = "Na data de "+dataString+" o utilizador com o id igual a "+idCompra+" comprou "+sharesToBuy+" shares da ideia com o id igual a "+idIdeia+" ao preço de "+precoCompra+" Deicoins por share ao utilizador com o id igual a "+idVende;
+
                     OAuthService service = new ServiceBuilder()
                              .provider(FacebookApi.class)
                              .apiKey(apiKey)
@@ -1451,7 +1470,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             statement.close();
         }catch (SQLException e) {
             System.err.println("Connection Failed Facebook Server! Check output console " + e);
-        }        
+        }catch (Exception e) {
+            System.err.println("Connection Failed Facebook Server1! Check output console " + e);
+        }     
     }
     
     // Verifica se a Compra é Possivel de se realizar
@@ -1563,14 +1584,14 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     private boolean transaccaoAcceptedIdeia(int idVende, int idCompra, int ideiaTransaction, int sharesToBuy, double newPrice, double precoCompra, String dataString) {
         //boolean hasAttributeIdea = existingAttribute(idCompra, ideiaTransaction);
         boolean didItWork = true;
-        //if(hasAttributeIdea) {
+        /*if(hasAttributeIdea) {
             if(!bounceMoneyAndShares(idVende, idCompra, ideiaTransaction, sharesToBuy, newPrice, dataString))
                 didItWork = false;
-        /*}
-        else {
+        }
+        else {*/
             if(!bounceMoneyAndShares(idVende, idCompra, ideiaTransaction, sharesToBuy, newPrice, dataString))
                 didItWork = false;
-        }*/
+        //}
         /*if(!verifyRemoveAttributeSeller(idVende, ideiaTransaction))
             didItWork = false;*/
 
@@ -1625,10 +1646,12 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 RollBack();
                 return false;
             }
+            //System.out.println("CHEGOU AQUI!1");
 
             // 2-Retirar shares ao atributo do vendedor
             String addAttributeSharesSeller = "UPDATE USER_SHARE SET NR_SHARE = NR_SHARE - " + sharesToBuy
-                    + "WHERE IDUSER_SHARE = " + idAttributeToBuy;
+                    + " WHERE IDUSER_SHARE = " + idAttributeToBuy;
+            //System.out.println(addAttributeSharesSeller);
             try{
                 statement.executeUpdate(addAttributeSharesSeller);
             } catch (SQLException e) {
@@ -1636,6 +1659,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 RollBack();
                 return false;
             }
+            //System.out.println("CHEGOU AQUI!2");
 
             // 3-Adicionar dinheiro ao vendedor
             String depositMoneySeller = "UPDATE UTILIZADOR SET DINHEIRO = DINHEIRO + " + preco*sharesToBuy +
@@ -1647,6 +1671,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 RollBack();
                 return false;
             }
+            //System.out.println("CHEGOU AQUI!3");
 
             // 4-Descobrir o atributo do comprador da respectiva ideia
             long idAttributeToSell = this.getAttributeByPessoaIdeia(idCompra, ideiaTransaction);
@@ -1654,6 +1679,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 createNewAttributeTransaction(idCompra, ideiaTransaction, newPrice, sharesToBuy);
                 isNEW = true;
             }
+            //System.out.println("CHEGOU AQUI!4");
 
             // 5-Retirar dinheiro ao comprador
             String retrieveMoneyBuyer = "UPDATE UTILIZADOR SET UTILIZADOR.DINHEIRO = UTILIZADOR.DINHEIRO - " + preco*sharesToBuy
@@ -1665,11 +1691,12 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 RollBack();
                 return false;
             }
+            //System.out.println("CHEGOU AQUI!5");
 
             if(!isNEW){
                 // 6-Adicionar Shares ao atributo do comprador
                 String addAttributeSharesBuyer = "UPDATE USER_SHARE SET NR_SHARE = NR_SHARE + " + sharesToBuy
-                        + "WHERE IDUSER_SHARE = " + idAttributeToSell;
+                        + " WHERE IDUSER_SHARE = " + idAttributeToSell;
                 try{
                     statement.executeUpdate(addAttributeSharesBuyer);
                 } catch (SQLException e) {
@@ -1677,10 +1704,11 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                     RollBack();
                     return false;
                 }
+                //System.out.println("CHEGOU AQUI!6");
 
                 // 7-Actualizar novo pre�o das shares do comprador
                 String updateSharesAttributeBuyer = "UPDATE USER_SHARE SET USER_SHARE.PRICE = " + newPrice
-                        + "WHERE IDUSER_SHARE = "+ idAttributeToSell;
+                        + " WHERE IDUSER_SHARE = "+ idAttributeToSell;
                 try{
                     statement.executeUpdate(updateSharesAttributeBuyer);
                 } catch (SQLException e) {
@@ -1689,10 +1717,11 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                     return false;
                 }
             }
+            //System.out.println("CHEGOU AQUI!7");
 
             // 8-valida que a ideia já foi pelo menos uma vez comprada
             String updateIsFirst = "UPDATE IDEIA SET IS_FIRST = 0, VALOR_MERCADO = " + preco 
-                    + "WHERE IDIDEIA = " + ideiaTransaction;
+                    + " WHERE IDIDEIA = " + ideiaTransaction;
             try{
                 statement.executeUpdate(updateIsFirst);
             } catch (SQLException e) {
@@ -1700,14 +1729,24 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 RollBack();
                 return false;
             }
+            //System.out.println("CHEGOU AQUI!8");
 
             // 9-Adicionar na tabela das notificações a compra
-            if(!addTransactionDescription(idVende, "Utilizador vendeu " + sharesToBuy+" shares da ideia " + ideiaTransaction + " por " + preco + " DEIcoins ao utilizador " + idCompra, dataString) ||
-                    !addTransactionDescription(idCompra, "Utilizador comprou  " + sharesToBuy+" shares da ideia " + ideiaTransaction + " por " + preco + " DEIcoins ao utilizador " + idVende, dataString))
+            if(!addTransactionDescription(idVende, "Utilizador vendeu " + sharesToBuy+" shares da ideia " + ideiaTransaction + " por " + preco*sharesToBuy + " DEIcoins ao utilizador " + idCompra, dataString) ||
+                    !addTransactionDescription(idCompra, "Utilizador comprou  " + sharesToBuy+" shares da ideia " + ideiaTransaction + " por " + preco*sharesToBuy + " DEIcoins ao utilizador " + idVende, dataString))
                 return false;
-
+            //System.out.println("CHEGOU AQUI!9");
+            
+            
             commentfacebook(idVende,idCompra,ideiaTransaction,sharesToBuy,preco,dataString);
             
+            try {
+                serverwebsocket.print_all_client("Id Ideia = "+ideiaTransaction+"\t->"+preco+"Deicoins");
+            } catch (RemoteException ex) {
+                Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            //System.out.println("CHEGOU AQUI!10");
             statement.close();
         } catch (SQLException e) {
             System.err.println(e);
@@ -1817,15 +1856,13 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
     
     public void buy_all(int ideiaID) {
-        double value = 0, money;
+        double value = 0, money = getValorMercado(ideiaID), aux;
         String search = "SELECT IDUSER, NR_SHARE FROM USER_SHARE WHERE IDIDEIA = " + ideiaID;
         
         int userID, nr_share, user_shareID;
         Date data = new Date();
         String dataString = dateFormat.format(data);
-        money = getValorMercado(ideiaID);
         try {
-            //System.out.println("->"+money);
             Statement statement = DBConn.createStatement();
             ResultSet rs = statement.executeQuery(search);
             while(rs.next()) {
@@ -1836,17 +1873,17 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 String get_money = "SELECT DINHEIRO FROM UTILIZADOR WHERE IDUSER = " + userID;
                 ResultSet rs1 = statement2.executeQuery(get_money);
                 rs1.next();
-                money = rs1.getDouble(1) + money*nr_share;
-                money = converte5(money);
-                //System.out.println(userID+" "+nr_share+" "+money + " " + rs1.getDouble(1) + " " + money);
-                String update_money = "UPDATE UTILIZADOR SET DINHEIRO = " + money + " WHERE IDUSER = " + userID;
+                aux = money*nr_share;
+                double money1 = rs1.getDouble(1) + aux;
+                money1 = converte5(money1);
+                String update_money = "UPDATE UTILIZADOR SET DINHEIRO = " + money1 + " WHERE IDUSER = " + userID;
                 statement2.executeUpdate(update_money);
                 insereUserDataOffline(userID,0);
-                value += money*nr_share;
+                value += aux;
                 rs1.close();
                 statement2.close();
-                addTransactionDescription(userID, "Utilizador vendeu " + nr_share+" shares da ideia " + ideiaID + " por " + money + " DEIcoins ao utilizador " + 0, dataString);
-                addTransactionDescription(0, "Utilizador comprou  " + nr_share+" shares da ideia " + ideiaID + " por " + money + " DEIcoins ao utilizador " + userID, dataString); 
+                addTransactionDescription(userID, "Utilizador vendeu " + nr_share+" shares da ideia " + ideiaID + " por " + aux + " DEIcoins ao utilizador " + 0, dataString);
+                addTransactionDescription(0, "Utilizador comprou  " + nr_share+" shares da ideia " + ideiaID + " por " + aux + " DEIcoins ao utilizador " + userID, dataString); 
             }
             value = converte5(value);
             String insert = "INSERT INTO HALL_OF_FAME VALUES("+ ideiaID + "," + value +")";
@@ -1855,7 +1892,13 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             rs.close();
             statement.close(); 
             DBConn.commit();
-            //RollBack();
+            
+            try {
+                serverwebsocket.print_all_client("Id Ideia = "+ideiaID+"\t->Added to Hall of Fame");
+            } catch (RemoteException ex) {
+                Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
         }catch (SQLException e) {
             System.err.println("Connection Failed Buying shares. Check output console " + e);
             RollBack();

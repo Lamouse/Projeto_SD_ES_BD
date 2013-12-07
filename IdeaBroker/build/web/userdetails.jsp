@@ -54,8 +54,21 @@
             }
             
             function writeToHistory(text) {
-                var markee = document.getElementById('history');
-                markee.textContent = text;
+                if(text.indexOf('all:')===0){
+                    text = text.replace('all:','');
+                    var history = document.getElementById('ideia_hist');
+                    var p = document.createElement('p');
+                    p.style.wordWrap = 'break-word';
+                    p.innerHTML = text;
+                    history.appendChild(p);
+                    while (history.childNodes.length > 25)
+                        history.removeChild(console.firstChild);
+                    history.scrollTop = history.scrollHeight;
+                }
+                else{
+                    var markee = document.getElementById('history');
+                    markee.textContent = text;
+                }
             }
         </script>       
     </head>
@@ -105,8 +118,12 @@
             <br><br>
         </fieldset>
         <br><br><br>
+        Stock exchange of ideas:
+        <div id="ideia_hist"></div>
+        <br><br><br>
+        
         <div id="out">
             <s:a href="logout">Logout</s:a>
-        </div>  
+        </div> 
     </body>
 </html>

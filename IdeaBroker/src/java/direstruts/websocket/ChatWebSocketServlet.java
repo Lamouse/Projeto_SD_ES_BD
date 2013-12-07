@@ -62,6 +62,15 @@ public class ChatWebSocketServlet extends WebSocketServlet {
                 }
             }
         }
+        
+        public void print_all_client(String msg) throws RemoteException {
+            for (ChatMessageInbound connection : connections) {
+                try {
+                    CharBuffer buffer = CharBuffer.wrap("all:"+msg);
+                    connection.getWsOutbound().writeTextMessage(buffer);
+                } catch (IOException ignore) {}
+            }
+        }
     }
 
     private final class ChatMessageInbound extends MessageInbound implements Serializable {
