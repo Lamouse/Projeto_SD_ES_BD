@@ -16,7 +16,7 @@ public class downloadAction extends ActionSupport{
     private int ididea;
 
     public String execute() throws Exception {
-        System.out.println(ididea);
+        //System.out.println(ididea);
         //fileInputStream = new FileInputStream(new File("C:\\downloadfile.txt"));
         if(searchfile())
             return SUCCESS;
@@ -32,7 +32,7 @@ public class downloadAction extends ActionSupport{
                 filename = msg.getFile().getName();
                 fileInputStream = new ByteArrayInputStream(msg.getFile().getBytes());
                 cond = true;
-                System.out.println(filename);
+                //System.out.println(filename);
             }
         }catch(Exception e) {
             System.err.println("Erro no RMI: " + e);

@@ -35,7 +35,6 @@ public class createideaAction extends ActionSupport {
             
             if(!(fileUploadFileName==null)){
                 aux = new NamedByteArray(fileUpload,fileUploadFileName);
-                System.out.print("BITCH PLEASE!");
             }                 
             try{
                 ExecuteCommands srmi = (ExecuteCommands)Naming.lookup("rmi://localhost:1099/ServerRMI");
