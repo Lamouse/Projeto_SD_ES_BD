@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.*;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -847,17 +848,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     // Muda o preço dum User_Share de uma Ideia
     public void changeSharePrice(int pessoaID, int ideiaID, double newPrice) {
-        if(newPrice < 0 || verifica_ideia_isfirst(ideiaID)==true) {
-            System.err.println("Não é possível mudar o preço");
-            return;
-        }
-        String updatePrice =  "UPDATE USER_SHARE SET PRICE = " + newPrice
-                + " WHERE IDUSER = " + pessoaID + " AND IDIDEIA = " + ideiaID;
         try {
-            Statement statement = DBConn.createStatement();
-            statement.executeUpdate(updatePrice);
-            statement.close();
-            DBConn.commit();
+			CallableStatement cS = DBConn.prepareCall("{CALL CHANGE_SHARE_PRICE(?)}");
+			cS.registerOutParameter(String.valueOf(newPrice), 2);
             verifyExecutePendingTransaction(ideiaID);
         } catch (SQLException e) {
             System.err.println("Connectifon Failed Changing Price To Share! Check output console " + e);
@@ -903,8 +896,8 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     // Adiciona uma ideia
-    //public boolean addNewIdeia(String type, String ideiaText, String upId, String topicos, int person, int startShares, int value, String dataString, NamedByteArray file) throws RemoteException {
-    public boolean addNewIdeia(/*String type,*/ String ideiaText, /*String upId,*/ String topicos, int person, /*int startShares, */int investimento, String dataString, NamedByteArray file) throws RemoteException {
+    public boolean addNewIdeia(String ideiaText, String topicos, int person, int investimento, 
+								String dataString, NamedByteArray file) throws RemoteException {
         int startShares = 100000;
         double value = ((double)investimento)/((double)startShares);
 
@@ -919,11 +912,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 System.err.println("Um dos tópicos não existe!");
                 return false;
             }
-            /*if(!upId.isEmpty() && !verifyIdeiaUp(upId)) {
-                System.err.println("Uma das ideias não existe!");
-                return false;
-            }*/
-
             String newName = "";
             String[] partes;
             if(file != null){
@@ -976,34 +964,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                     statement.close();
                     return false;
                 }
-
-                /*if(upId.isEmpty()) {
-                    insertIdeia_Ideia = "INSERT INTO IDEIA_IDEIA VALUES(NULL" +
-                            "," +  ideiaID + ")";
-                    try {
-                        statement.addBatch(insertIdeia_Ideia);
-                    }catch (SQLException e) {
-                        System.err.println("Connection Failed Add Batch idea! Check output console " + e);
-                        RollBack();
-                        statement.close();
-                        return false;
-                    }
-                }
-                else {
-                    partes = upId.split(",");
-                    for(int i = 0; i < partes.length; ++i) {
-                        insertIdeia_Ideia = "INSERT INTO IDEIA_IDEIA VALUES(" + Integer.parseInt(partes[i]) +
-                                "," +  ideiaID + ")";
-                        try {
-                            statement.addBatch(insertIdeia_Ideia);
-                        }catch (SQLException e) {
-                            System.err.println("Connection Failed Add Batch idea! Check output console " + e);
-                            RollBack();
-                            statement.close();
-                            return false;
-                        }
-                    }
-                }*/
                 if(serverwebsocket != null){
                     try {
                         serverwebsocket.print_all_client("Id Ideia = "+ideiaID+"\t->New idea");
@@ -2079,4 +2039,3 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         return aux;
     }
 }
-
