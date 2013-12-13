@@ -849,8 +849,11 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     // Muda o preço dum User_Share de uma Ideia
     public void changeSharePrice(int pessoaID, int ideiaID, double newPrice) {
         try {
-			CallableStatement cS = DBConn.prepareCall("{CALL CHANGE_SHARE_PRICE(?)}");
-			cS.registerOutParameter(String.valueOf(newPrice), 2);
+            CallableStatement cS = DBConn.prepareCall("{CALL CHANGE_SHARE_PRICE(?, ? ,?)}");
+			cS.setInt(1, pessoaID);
+			cS.setInt(2, ideiaID);
+			cS.setDouble(3, newPrice);
+			cS.execute();
             verifyExecutePendingTransaction(ideiaID);
         } catch (SQLException e) {
             System.err.println("Connectifon Failed Changing Price To Share! Check output console " + e);
@@ -896,8 +899,8 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     // Adiciona uma ideia
-    public boolean addNewIdeia(String ideiaText, String topicos, int person, int investimento, 
-								String dataString, NamedByteArray file) throws RemoteException {
+    //public boolean addNewIdeia(String type, String ideiaText, String upId, String topicos, int person, int startShares, int value, String dataString, NamedByteArray file) throws RemoteException {
+    public boolean addNewIdeia(/*String type,*/ String ideiaText, /*String upId,*/ String topicos, int person, /*int startShares, */int investimento, String dataString, NamedByteArray file) throws RemoteException {
         int startShares = 100000;
         double value = ((double)investimento)/((double)startShares);
 
@@ -912,6 +915,11 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 System.err.println("Um dos tópicos não existe!");
                 return false;
             }
+            /*if(!upId.isEmpty() && !verifyIdeiaUp(upId)) {
+                System.err.println("Uma das ideias não existe!");
+                return false;
+            }*/
+
             String newName = "";
             String[] partes;
             if(file != null){
@@ -924,19 +932,19 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             String aux_str = postfacebook(person,ideiaText,investimento);
             
             partes = topicos.split(",");
-            String insertIdeia = "INSERT INTO IDEIA VALUES"
-                    + "(" + ideiaID + ",'" + ideiaText + "'," +
-                    startShares + "," + value + "," + 1 + "," + 0 + "," + value + "," + person + ",'" + aux_str + "','" + newName +"')";
-            String insertUser_Share = "INSERT INTO USER_SHARE VALUES"
-                    + "(" + attributeID + "," + ideiaID + "," + person +
-                    "," + value + "," + startShares + ")";
             try{
                 Statement statement = DBConn.createStatement();
                 try {
-                    //System.out.println(insertIdeia);
-                    statement.executeUpdate(insertIdeia);
-                    //System.out.println(insertUser_Share);
-                    statement.executeUpdate(insertUser_Share);
+					CallableStatement cS = DBConn.prepareCall("{CALL CREATE_NEW_IDEIA(?, ?, ?, ?, ?, ?, ?, ?)}");
+					cS.setInt(1, ideiaID);
+					cS.setString(2, ideiaText);
+					cS.setInt(3, startShares);
+					cS.setDouble(4, value);
+					cS.setInt(5, person);
+					cS.setString(6, aux_str);
+					cS.setString(7, newName);
+					cS.setInt(8, attributeID);
+					cS.execute();
                 }catch (SQLException e) {
                     System.err.println("Connection Failed creating idea! Check output console " + e);
                     RollBack();
@@ -964,6 +972,34 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                     statement.close();
                     return false;
                 }
+
+                /*if(upId.isEmpty()) {
+                    insertIdeia_Ideia = "INSERT INTO IDEIA_IDEIA VALUES(NULL" +
+                            "," +  ideiaID + ")";
+                    try {
+                        statement.addBatch(insertIdeia_Ideia);
+                    }catch (SQLException e) {
+                        System.err.println("Connection Failed Add Batch idea! Check output console " + e);
+                        RollBack();
+                        statement.close();
+                        return false;
+                    }
+                }
+                else {
+                    partes = upId.split(",");
+                    for(int i = 0; i < partes.length; ++i) {
+                        insertIdeia_Ideia = "INSERT INTO IDEIA_IDEIA VALUES(" + Integer.parseInt(partes[i]) +
+                                "," +  ideiaID + ")";
+                        try {
+                            statement.addBatch(insertIdeia_Ideia);
+                        }catch (SQLException e) {
+                            System.err.println("Connection Failed Add Batch idea! Check output console " + e);
+                            RollBack();
+                            statement.close();
+                            return false;
+                        }
+                    }
+                }*/
                 if(serverwebsocket != null){
                     try {
                         serverwebsocket.print_all_client("Id Ideia = "+ideiaID+"\t->New idea");
