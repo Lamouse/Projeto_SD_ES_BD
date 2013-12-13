@@ -69,7 +69,7 @@
              }(document));
         </script>
         <br /><br /><br /><br /><br /><br /> 
-
+        
         <fieldset style="width:40%; margin-left: auto; margin-right: auto">
             <legend>Register</legend>
             <s:form action="register" method="post" cssStyle="margin-left:auto; margin-right:auto; width:100%">

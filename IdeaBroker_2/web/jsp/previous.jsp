@@ -1,0 +1,1 @@
+<script language="Javascript">history.back(0);</script>

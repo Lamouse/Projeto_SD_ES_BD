@@ -7,7 +7,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.*;
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -848,12 +847,17 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     // Muda o preço dum User_Share de uma Ideia
     public void changeSharePrice(int pessoaID, int ideiaID, double newPrice) {
+        if(newPrice < 0 || verifica_ideia_isfirst(ideiaID)==true) {
+            System.err.println("Não é possível mudar o preço");
+            return;
+        }
+        String updatePrice =  "UPDATE USER_SHARE SET PRICE = " + newPrice
+                + " WHERE IDUSER = " + pessoaID + " AND IDIDEIA = " + ideiaID;
         try {
-            CallableStatement cS = DBConn.prepareCall("{CALL CHANGE_SHARE_PRICE(?, ? ,?)}");
-			cS.setInt(1, pessoaID);
-			cS.setInt(2, ideiaID);
-			cS.setDouble(3, newPrice);
-			cS.execute();
+            Statement statement = DBConn.createStatement();
+            statement.executeUpdate(updatePrice);
+            statement.close();
+            DBConn.commit();
             verifyExecutePendingTransaction(ideiaID);
         } catch (SQLException e) {
             System.err.println("Connectifon Failed Changing Price To Share! Check output console " + e);
@@ -932,19 +936,19 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             String aux_str = postfacebook(person,ideiaText,investimento);
             
             partes = topicos.split(",");
+            String insertIdeia = "INSERT INTO IDEIA VALUES"
+                    + "(" + ideiaID + ",'" + ideiaText + "'," +
+                    startShares + "," + value + "," + 1 + "," + 0 + "," + value + "," + person + ",'" + aux_str + "','" + newName +"')";
+            String insertUser_Share = "INSERT INTO USER_SHARE VALUES"
+                    + "(" + attributeID + "," + ideiaID + "," + person +
+                    "," + value + "," + startShares + ")";
             try{
                 Statement statement = DBConn.createStatement();
                 try {
-					CallableStatement cS = DBConn.prepareCall("{CALL CREATE_NEW_IDEIA(?, ?, ?, ?, ?, ?, ?, ?)}");
-					cS.setInt(1, ideiaID);
-					cS.setString(2, ideiaText);
-					cS.setInt(3, startShares);
-					cS.setDouble(4, value);
-					cS.setInt(5, person);
-					cS.setString(6, aux_str);
-					cS.setString(7, newName);
-					cS.setInt(8, attributeID);
-					cS.execute();
+                    //System.out.println(insertIdeia);
+                    statement.executeUpdate(insertIdeia);
+                    //System.out.println(insertUser_Share);
+                    statement.executeUpdate(insertUser_Share);
                 }catch (SQLException e) {
                     System.err.println("Connection Failed creating idea! Check output console " + e);
                     RollBack();
@@ -2075,3 +2079,4 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
         return aux;
     }
 }
+

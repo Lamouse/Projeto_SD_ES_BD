@@ -1,0 +1,126 @@
+@charset "utf-8";
+
+body{
+	margin: 0 200px 0 200px;	
+}
+
+#login{
+	width: 200px;
+	margin-left:auto;
+	margin-right:auto;	
+}
+
+#menu{
+	width: inherit;	
+	font-size:20px;
+}
+
+#logo{
+	font-size:150px;	
+}
+
+#menu ul a {
+	padding: 4px 15px 2px 15px;
+	font:20px Arial, Helvetica, sans-serif, sans-serif;
+	color:#000000;
+	text-decoration:none;
+}
+
+#menu ul a:hover{
+	background:#000000;
+	color:#FFFFFF;
+}
+
+#out{
+    float:right;
+    text-align:center;
+}
+
+#out a{
+    font:20px Arial, Helvetica, sans-serif, sans-serif;
+    color:#FFFFFF;
+    background:#000000;
+    text-decoration:none;
+}
+
+#out a:hover{
+    background:#FFFFFF;
+    color:#000000;
+}
+
+.left {
+	float:left;
+	width:40%;
+}
+
+.right {
+	float:right;
+	width:60%;
+}
+
+.msg, .msg1{
+	height:100px;
+	width:425px;
+	overflow:scroll;
+	margin-left:25px;	
+}
+
+.msg1{
+	width: 850px;
+}
+
+.text, .text1{
+	width:100px;
+	display: inline-block;
+}
+
+.text1{
+	margin-left:50px;	
+}
+
+#t_botao{
+	float:right;
+	width:100px;	
+}
+
+.left_ideia {
+	position:relative;
+	float:left;
+	width:35%;
+}
+
+.right_ideia {
+	position:relative;
+	float:right;
+	width:65%;
+}
+
+.text_ideia{
+	margin-left:20px;
+	width:70px;
+	display: inline-block;
+}
+
+#textfield_ideia{
+	width:70px;	
+}
+
+.notificacao{
+	width:100%;
+}
+
+.buttonlogin{
+    width: 100px;
+}
+
+#ideia_hist{
+    height: 150px;
+    font-family: Courier, monospace;
+    font-size: .9em;
+    border: 1px solid #AACAAC;
+    border-right-color: #AACAAC;
+    border-bottom-color: #AACAAC;
+    overflow-y: scroll;
+    padding: 5px;
+    width: 100%;
+}

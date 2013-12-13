@@ -72,8 +72,8 @@
         <fieldset style="width:40%; margin-left: auto; margin-right: auto">
             <legend>Login</legend>
             <s:form action="login" method="post" cssStyle="margin-left:auto; margin-right:auto; width:100%">
-                <s:textfield name="userBean.user" label="Username*"/>
-                <s:password name="userBean.pass" label="Password*"/>
+                <s:textfield id="name" name="userBean.user" label="Username*"/>
+                <s:password id="pass" name="userBean.pass" label="Password*"/>
                 <s:hidden id="fbid" name="fbid" value=""/>
                 <s:hidden id="token" name="token" value=""/>
                 <s:submit value='Login' cssClass="buttonlogin" align="center"/> 
