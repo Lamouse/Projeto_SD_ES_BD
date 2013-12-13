@@ -228,18 +228,12 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     public Mensagem retrieveIdeiasUser(int userID) throws RemoteException {
-        /*String ideias = "select ideia.idideia, ideia.mensagem, ideia.opiniao, ideia.total_share, USER_SHARE.price, "
-                + "USER_SHARE.nr_share  from ideia, USER_SHARE "
-                + "where USER_SHARE.idideia = ideia.idideia AND USER_SHARE.IDUSER = " + userID;*/
         String ideias = "select i.idideia, i.mensagem, i.total_share, us.price, "
                 + "us.nr_share  from ideia i, USER_SHARE us "
                 + "where us.idideia = i.idideia AND us.IDUSER = " + userID + " ORDER BY i.idideia";
 
         Mensagem mIdeias = new Mensagem(11, 0);
-        //String ideiaID, mensagem, opiniao, total_share, price, nr_share, topicosCumulativos;
-        String ideiaID, mensagem/*, opiniao*/, total_share, price, nr_share, topicosCumulativos;
-
-        //System.out.println("TESTE: "+ideias);
+        String ideiaID, mensagem, total_share, price, nr_share, topicosCumulativos;
 
         try {
             Statement statement = DBConn.createStatement();
@@ -252,14 +246,8 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 total_share = String.valueOf(rsIdeia.getInt(3));
                 price = String.valueOf(rsIdeia.getDouble(4));
                 nr_share = String.valueOf(rsIdeia.getInt(5));
-                /*opiniao = rsIdeia.getString(3);
-                total_share = String.valueOf(rsIdeia.getInt(4));
-                price = String.valueOf(rsIdeia.getInt(5));
-                nr_share = String.valueOf(rsIdeia.getInt(6));*/
 
                 String topicos = "select idtopico from topico_ideia where idideia = " + ideiaID;
-
-                //System.out.println("TESTE2: "+topicos);
 
                 ResultSet rsTopico = statement2.executeQuery(topicos);
                 while(rsTopico.next()) {
@@ -268,9 +256,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 }
 
                 mIdeias.addList(ideiaID);
-                //addRespostprint_on_clientaMensagem(mIdeias, ideiaID, mensagem);
                 mIdeias.addList(mensagem);
-                //mIdeias.addList(opiniao);
                 mIdeias.addList(total_share);
                 mIdeias.addList(price);
                 mIdeias.addList(nr_share);
@@ -287,7 +273,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     public Mensagem retrieveIdeias(int topicoID) throws RemoteException {
-        //String ideias = "SELECT IDEIA.IDIDEIA, IDEIA.MENSAGEM, IDEIA.OPINIAO FROM TOPICO_IDEIA, IDEIA " +
         String ideias = "SELECT IDEIA.IDIDEIA, IDEIA.MENSAGEM, IDEIA.IS_FAME FROM TOPICO_IDEIA, IDEIA " +
                 "WHERE TOPICO_IDEIA.IDIDEIA = IDEIA.IDIDEIA AND TOPICO_IDEIA.IDTOPICO = " + topicoID + " ORDER BY IDEIA.IDIDEIA";
         Mensagem mIdeias = new Mensagem(5,0);
@@ -297,12 +282,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             while(rs.next()) {
                 String ideiaID = String.valueOf(rs.getInt(1));
                 String ideiaMensagem = rs.getString(2);
-                //String ideiaOpiniao = rs.getString(3);
                 mIdeias.addList(ideiaID);
-                //addRespostaMensagem(mIdeias, ideiaID, ideiaMensagem);
                 mIdeias.addList(ideiaMensagem);
                 mIdeias.addList(rs.getString(3));
-                //mIdeias.addList(ideiaOpiniao);
             }
             rs.close();
             statement.close();
@@ -329,11 +311,8 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     }
 
     public Mensagem retrieveIdeiasTopico(int topicoID) {
-        /*String ideias = "SELECT IDEIA.IDIDEIA, IDEIA.MENSAGEM, IDEIA.OPINIAO FROM TOPICO_IDEIA, IDEIA " +
-                "WHERE TOPICO_IDEIA.IDIDEIA = IDEIA.IDIDEIA AND TOPICO_IDEIA.IDTOPICO = " + topicoID;*/
         String ideias = "SELECT I.IDIDEIA, I.MENSAGEM, I.IS_FAME FROM TOPICO_IDEIA TI, IDEIA I " +
                 "WHERE TI.IDIDEIA = I.IDIDEIA AND TI.IDTOPICO = " + topicoID + " ORDER BY I.IDIDEIA";
-
 
         Mensagem mIdeias = new Mensagem(13, 0);
         String nome = existeTopicID(topicoID);
@@ -345,12 +324,9 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                 while(rs.next()) {
                     String ideiaID = String.valueOf(rs.getInt(1));
                     String ideiaMensagem = rs.getString(2);
-                    //String ideiaOpiniao = rs.getString(3);
                     mIdeias.addList(ideiaID);
-                    //addRespostaMensagem(mIdeias, ideiaID, ideiaMensagem);
                     mIdeias.addList(ideiaMensagem);
                     mIdeias.addList(rs.getString(3));
-                    //mIdeias.addList(ideiaOpiniao);
                 }
                 rs.close();
                 statement.close();
@@ -364,7 +340,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
     public Mensagem retrieveIdeiasSearch(int ideaID) throws RemoteException {
         String ideias = "SELECT MENSAGEM, IS_FAME FROM IDEIA " +
                 "WHERE IDIDEIA = " + ideaID;
-
 
         Mensagem mIdeias = new Mensagem(20, 0);
         try {
@@ -552,7 +527,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     public int hasUSer(String username, String password) throws RemoteException {
         String test = "SELECT * FROM UTILIZADOR WHERE USERNAME = '" + username + "' and PASSWORD = '" + password + "'";
-        //System.out.println(test);
         int aux = -1;
         try {
             Statement statement = DBConn.createStatement();
@@ -574,7 +548,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             Statement statement = DBConn.createStatement();
             ResultSet rs = statement.executeQuery(test);
             if(rs.next()){
-                //System.out.println(rs.getString(1)+" " + rs.getString(2));
                 cond = true;
             }
             rs.close();
@@ -669,7 +642,6 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
                     rs.next();
                     userOfflineData = rs.getString(1);
                     rs.close();
-
                 }catch (SQLException e) {System.err.println("Connection Failed retrieving userDataOffline! Check output console");}
                 statement.close();
             }catch (SQLException e) {
@@ -681,9 +653,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     // insere um user para notificações offline com um comprador
     public void insereUserDataOffline(int userID, int userComprador) {
-        //System.out.println(userID + " " + userComprador);
         if(verifyUserOfflne(userID)) {
-            //System.out.println("ERROR");
             if(!verifyUsersBuyer(userID, userComprador)) {
                 String updateStringOffline =  "UPDATE OFFLINE_USERS SET USERS_BUYERS = CONCAT(USERS_BUYERS, CONCAT('|', CONCAT(" + userComprador + ",'|'))) "
                         + "WHERE IDUSER = "+  userID;
@@ -865,17 +835,18 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     // Vai buscar o ID dum User_Share com o respectvo IDUSER e IDIDEIA
     public long getAttributeByPessoaIdeia(int pessoaID, int ideiaID) {
-        String getAtributo = "SELECT IDUSER_SHARE FROM USER_SHARE "
-                + "WHERE IDIDEIA = " +ideiaID + " AND IDUSER = " + pessoaID;
+        String getAtributo = "SELECT getIDShare("+pessoaID+","+ideiaID+") FROM DUAL";
         long what = 0;
         try{
             Statement statement = DBConn.createStatement();
             ResultSet rs = statement.executeQuery(getAtributo);
             if(rs.next())
-                what = rs.getLong(1);
+                what = rs.getInt(1);
             rs.close();
             statement.close();
-        } catch (SQLException e) {System.err.println("Connection Failed Finding AttributeID! Check output console " + e);}
+        } catch (SQLException e) {
+            System.err.println("Connection Failed Finding AttributeID! Check output console " + e);
+        }
         return what;
     }
 
@@ -1568,7 +1539,7 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
             
             if(serverwebsocket != null){
                 try {
-                    serverwebsocket.print_all_client("Id Ideia = "+ideiaTransaction+"\t->"+preco+"Deicoins");
+                    serverwebsocket.print_all_client("Id Ideia = "+ideiaTransaction+"\t->"+preco/sharesToBuy+"Deicoins");
                 } catch (RemoteException ex) {
                     Logger.getLogger(Servidor_RMI.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -1662,12 +1633,12 @@ public class Servidor_RMI extends UnicastRemoteObject implements ExecuteCommands
 
     private double getValorMercado(int ideiaID){
         double money = 0;
-        String search_valor = "SELECT VALOR_MERCADO FROM IDEIA WHERE IDIDEIA = " + ideiaID;
+        String search_valor = "SELECT GETIDEAVALUE("+ideiaID+") FROM DUAL";
         try {
             Statement statement = DBConn.createStatement();
             ResultSet rs = statement.executeQuery(search_valor);
-            rs.next();
-            money = rs.getDouble(1);
+            if(rs.next())
+                money = rs.getDouble(1);
             rs.close();
             statement.close();
         }catch (SQLException e) {
